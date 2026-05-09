@@ -413,6 +413,14 @@ export default function AssessmentPage() {
               </div>
 
             </div>
+
+            {/* Free entry path */}
+            <div style={{ marginTop: '1rem', padding: '1.5rem', border: '1px solid rgba(200,169,81,0.15)', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C8A951', marginBottom: '0.5rem' }}>Not ready to commit?</p>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.7, marginBottom: '1rem', fontStyle: 'italic' }}>Start with the first two modules — Introduction and Calling — completely free. No payment required.</p>
+              <Link href="/modules/introduction" style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.9rem', fontWeight: 600, color: '#C8A951', textDecoration: 'underline' }}>Begin Free → Introduction &amp; Calling</Link>
+            </div>
+
           </div>
 
           {/* Score breakdown */}
