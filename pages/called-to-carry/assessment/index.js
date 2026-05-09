@@ -370,7 +370,7 @@ export default function AssessmentPage() {
                 <p style={s.tierTagline}>Walk it at your own pace.</p>
                 <ul style={s.tierBullets}>
                   <li>All seven modules</li>
-                  <li>Text + audio teaching</li>
+                  <li>Text-based teaching</li>
                   <li>Personalized 5C Blueprint diagnostic</li>
                   <li>Blueprint export + Certificate</li>
                   <li>3 months portal access</li>
