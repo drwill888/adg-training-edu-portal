@@ -4,6 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { signToken } from '../../../lib/called-to-carry/auth/tokens';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,7 +48,8 @@ export default async function handler(req, res) {
     const journeyUrl = `${SITE_URL}/called-to-carry`;
 
     try {
-      const { subject, html } = buildEmail({ emailNumber, firstName, archetypeName, journeyUrl });
+      const unsubscribeUrl = `${SITE_URL}/api/called-to-carry/drip-unsubscribe?email=${encodeURIComponent(email)}&token=${signToken(email)}`;
+      const { subject, html } = buildEmail({ emailNumber, firstName, archetypeName, journeyUrl, unsubscribeUrl });
 
       await resend.emails.send({ from: FROM, to: email, subject, html });
 
@@ -67,17 +69,17 @@ export default async function handler(req, res) {
 }
 
 // ─── Router ───────────────────────────────────────────────────────────────────
-function buildEmail({ emailNumber, firstName, archetypeName, journeyUrl }) {
+function buildEmail({ emailNumber, firstName, archetypeName, journeyUrl, unsubscribeUrl }) {
   switch (emailNumber) {
-    case 2: return emailTwo({ firstName, archetypeName, journeyUrl });
-    case 3: return emailThree({ firstName, archetypeName, journeyUrl });
-    case 4: return emailFour({ firstName, archetypeName, journeyUrl });
+    case 2: return emailTwo({ firstName, archetypeName, journeyUrl, unsubscribeUrl });
+    case 3: return emailThree({ firstName, archetypeName, journeyUrl, unsubscribeUrl });
+    case 4: return emailFour({ firstName, archetypeName, journeyUrl, unsubscribeUrl });
     default: throw new Error(`Unknown email number: ${emailNumber}`);
   }
 }
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
-function emailWrapper(content) {
+function emailWrapper(content, unsubscribeUrl) {
   return `
     <div style="background:#021A35;color:#FDF8F0;font-family:'Georgia',serif;max-width:600px;margin:0 auto;padding:3rem 2rem;">
       <p style="font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:#C8A951;margin:0 0 2rem;">
@@ -87,7 +89,9 @@ function emailWrapper(content) {
       <hr style="border:none;border-top:1px solid rgba(200,169,81,0.2);margin:3rem 0 1.5rem;" />
       <p style="font-size:0.9rem;color:#C8A951;margin:0 0 0.5rem;">— Will Meier, Founder · Awakening Destiny Global</p>
       <p style="font-size:0.72rem;color:rgba(253,248,240,0.3);margin:0.5rem 0 0;">
-        © ${new Date().getFullYear()} Awakening Destiny Global · You received this because you completed the Called to Carry assessment.
+        © ${new Date().getFullYear()} Awakening Destiny Global · You received this because you completed the Called to Carry assessment.<br/>
+        Awakening Destiny Global · PO Box 9203 · Bolton, CT 06043<br/>
+        <a href="${unsubscribeUrl}" style="color:rgba(200,169,81,0.5);text-decoration:underline;">Unsubscribe</a>
       </p>
     </div>
   `;
@@ -119,7 +123,7 @@ function divider() {
 }
 
 // ─── Email 2 — Day 3 ──────────────────────────────────────────────────────────
-function emailTwo({ firstName, archetypeName, journeyUrl }) {
+function emailTwo({ firstName, archetypeName, journeyUrl, unsubscribeUrl }) {
   return {
     subject: `${firstName}, your archetype has an assignment.`,
     html: emailWrapper(`
@@ -141,12 +145,12 @@ function emailTwo({ firstName, archetypeName, journeyUrl }) {
       ${bodyText(`This isn't content. It's formation. And formation isn't something you consume — it's something you walk through.`)}
       ${ctaButton(journeyUrl, 'Begin Called to Carry →')}
       ${bodyText(`Three tiers. One destination. Commissioning.`)}
-    `),
+    `, unsubscribeUrl),
   };
 }
 
 // ─── Email 3 — Day 7 ──────────────────────────────────────────────────────────
-function emailThree({ firstName, archetypeName, journeyUrl }) {
+function emailThree({ firstName, archetypeName, journeyUrl, unsubscribeUrl }) {
   return {
     subject: `The most dangerous thing a called person can do.`,
     html: emailWrapper(`
@@ -182,12 +186,12 @@ function emailThree({ firstName, archetypeName, journeyUrl }) {
       </table>
       ${ctaButton(journeyUrl, 'Choose Your Path →')}
       ${bodyText(`Don't let another week pass as a <em style="color:#C8A951;">${archetypeName}</em> who hasn't been commissioned yet.`)}
-    `),
+    `, unsubscribeUrl),
   };
 }
 
 // ─── Email 4 — Day 14 ─────────────────────────────────────────────────────────
-function emailFour({ firstName, archetypeName, journeyUrl }) {
+function emailFour({ firstName, archetypeName, journeyUrl, unsubscribeUrl }) {
   return {
     subject: `${firstName}, I want to say this directly.`,
     html: emailWrapper(`
@@ -208,6 +212,6 @@ function emailFour({ firstName, archetypeName, journeyUrl }) {
       ${bodyText(`And if this season isn't the moment, that's between you and the Lord. But don't let the weight you were assigned sit unclaimed because you were waiting to feel worthy of it.`)}
       <p style="font-size:1.1rem;font-style:italic;color:#C8A951;margin:2rem 0 0.5rem;">You were called before you felt called.</p>
       ${bodyText(`Walk in it.`)}
-    `),
+    `, unsubscribeUrl),
   };
 }
