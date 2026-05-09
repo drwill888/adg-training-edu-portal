@@ -387,7 +387,7 @@ export default function AssessmentPage() {
                 <ul style={s.tierBullets}>
                   <li>Everything in Self-Paced</li>
                   <li>21 days of direct access to Will</li>
-                  <li>Personal apostolic counsel</li>
+                  <li>Leaderthip feedback from Will</li>
                   <li>Accelerated formation rhythm</li>
                   <li>Designed for leaders at a threshold</li>
                 </ul>
