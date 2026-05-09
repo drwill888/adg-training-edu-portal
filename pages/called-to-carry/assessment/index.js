@@ -415,10 +415,11 @@ export default function AssessmentPage() {
             </div>
 
             {/* Free entry path */}
-            <div style={{ marginTop: '1rem', padding: '1.5rem', border: '1px solid rgba(200,169,81,0.15)', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C8A951', marginBottom: '0.5rem' }}>Not ready to commit?</p>
-              <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.7, marginBottom: '1rem', fontStyle: 'italic' }}>Start with the first two modules — Introduction and Calling — completely free. No payment required.</p>
-              <Link href="/modules/introduction" style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.9rem', fontWeight: 600, color: '#C8A951', textDecoration: 'underline' }}>Begin Free → Introduction &amp; Calling</Link>
+            <div style={{ marginTop: '1.5rem', padding: '2rem 1.75rem', background: 'rgba(200,169,81,0.06)', border: '1px solid rgba(200,169,81,0.35)', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.72rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#C8A951', fontWeight: 600, marginBottom: '0.75rem' }}>Start Free — No Payment Required</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.35rem', fontWeight: 400, color: '#FDF8F0', lineHeight: 1.3, marginBottom: '0.75rem' }}>Not ready to commit? Begin the journey free.</p>
+              <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.9rem', lineHeight: 1.65, opacity: 0.65, marginBottom: '1.5rem' }}>The Introduction and Calling modules are open to every leader — no card, no checkout. Taste the formation before you invest in the full journey.</p>
+              <Link href="/modules/introduction" style={{ display: 'inline-block', background: '#C8A951', color: '#021A35', borderRadius: '4px', fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: '0.9rem', padding: '0.8rem 2rem', textDecoration: 'none', letterSpacing: '0.04em' }}>Begin Free → Introduction &amp; Calling</Link>
             </div>
 
           </div>
