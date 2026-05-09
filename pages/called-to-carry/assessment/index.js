@@ -67,6 +67,7 @@ export default function AssessmentPage() {
   const [result, setResult] = useState(null);
   const [selectedLabel, setSelectedLabel] = useState('');
   const [saving, setSaving] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const handleAnswer = (option) => {
     const newAnswers = [...answers, { ...option, question: QUESTIONS[currentQ].question }];
@@ -109,7 +110,7 @@ export default function AssessmentPage() {
       const calc = calculateArchetype(answers);
       const res = await fetch('/api/called-to-carry/submit-archetype', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: gateData.firstName, email: gateData.email, office: calc.office, overlay: calc.overlay, archetypeId: calc.archetypeId, officeScores: calc.officeScores, overlayScores: calc.overlayScores }),
+        body: JSON.stringify({ firstName: gateData.firstName, email: gateData.email, office: calc.office, overlay: calc.overlay, archetypeId: calc.archetypeId, officeScores: calc.officeScores, overlayScores: calc.overlayScores, emailConsent: consentChecked }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed.');
@@ -239,6 +240,17 @@ export default function AssessmentPage() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '420px', margin: '0 auto' }}>
               <input type="text" required placeholder="First name" value={gateData.firstName} onChange={e => setGateData({ ...gateData, firstName: e.target.value })} style={s.input} />
               <input type="email" required placeholder="Your email address" value={gateData.email} onChange={e => setGateData({ ...gateData, email: e.target.value })} style={s.input} />
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', textAlign: 'left' }}>
+                <input
+                  type="checkbox"
+                  checked={consentChecked}
+                  onChange={e => setConsentChecked(e.target.checked)}
+                  style={{ marginTop: '3px', accentColor: '#C8A951', width: 16, height: 16, flexShrink: 0, cursor: 'pointer' }}
+                />
+                <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: '0.82rem', lineHeight: 1.6, opacity: 0.7 }}>
+                  Yes, send me Kingdom leadership insights and resources from Awakening Destiny Global. You can unsubscribe at any time.
+                </span>
+              </label>
               {error && <p style={{ color: '#ff6b6b', fontSize: '0.85rem', fontFamily: "'Outfit', sans-serif" }}>{error}</p>}
               <button type="submit" disabled={loading} style={s.btnPrimary}>{loading ? 'Processing…' : 'Reveal My Archetype →'}</button>
               <p style={{ textAlign: 'center', fontSize: '0.78rem', opacity: 0.45, fontFamily: "'Outfit', sans-serif" }}>We respect your inbox. No spam, ever.</p>
