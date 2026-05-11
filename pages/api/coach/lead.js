@@ -1,9 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { addToIcegramList, isIcegramConfigured } from "@/lib/coach/icegram";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { conversationId, email, firstName, interest } = req.body;
+  const { conversationId, email, firstName, interest, consentMarketing } = req.body;
   if (!email) return res.status(400).json({ error: "email is required" });
   if (!supabaseAdmin) return res.status(500).json({ error: "Database is not configured" });
 
@@ -15,6 +16,7 @@ export default async function handler(req, res) {
         email,
         first_name: firstName || null,
         interest: interest || null,
+        consent_marketing: Boolean(consentMarketing),
       })
       .select()
       .single();
@@ -28,7 +30,13 @@ export default async function handler(req, res) {
         .eq("id", conversationId);
     }
 
-    return res.status(200).json({ success: true, leadId: lead.id });
+    // Push to Icegram only if the visitor opted in to marketing.
+    let icegram = null;
+    if (consentMarketing && isIcegramConfigured()) {
+      icegram = await addToIcegramList({ email, firstName });
+    }
+
+    return res.status(200).json({ success: true, leadId: lead.id, icegram });
   } catch (err) {
     console.error("Lead capture error:", err);
     return res.status(500).json({ error: "Failed to save lead" });

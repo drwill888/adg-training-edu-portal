@@ -45,6 +45,7 @@ export default function WebsiteCoach() {
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadInterest, setLeadInterest] = useState("");
+  const [consentMarketing, setConsentMarketing] = useState(true);
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [gated, setGated] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -124,6 +125,7 @@ export default function WebsiteCoach() {
           email: leadEmail,
           firstName: leadName,
           interest: leadInterest,
+          consentMarketing,
         }),
       });
 
@@ -416,6 +418,26 @@ export default function WebsiteCoach() {
                     <option value="advisory">Advisory / 1:1 Coaching</option>
                     <option value="general">Just exploring</option>
                   </select>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 8,
+                      fontSize: 12,
+                      color: NAVY,
+                      lineHeight: 1.4,
+                      cursor: "pointer",
+                      padding: "2px 0",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={consentMarketing}
+                      onChange={(e) => setConsentMarketing(e.target.checked)}
+                      style={{ marginTop: 2, accentColor: NAVY }}
+                    />
+                    <span>Send me occasional emails from ADG with new programs, resources, and Discovery Conversation invitations.</span>
+                  </label>
                   <button
                     type="submit"
                     disabled={leadSubmitting || !leadEmail}
