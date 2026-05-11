@@ -30,13 +30,13 @@ export default async function handler(req, res) {
         .eq("id", conversationId);
     }
 
-    // Push to Icegram only if the visitor opted in to marketing.
-    let icegram = null;
+    // Push to Make webhook if the visitor opted in to marketing.
+    let webhook = null;
     if (consentMarketing && isIcegramConfigured()) {
-      icegram = await addToIcegramList({ email, firstName });
+      webhook = await addToIcegramList({ email, firstName, interest });
     }
 
-    return res.status(200).json({ success: true, leadId: lead.id, icegram });
+    return res.status(200).json({ success: true, leadId: lead.id, webhook });
   } catch (err) {
     console.error("Lead capture error:", err);
     return res.status(500).json({ error: "Failed to save lead" });
