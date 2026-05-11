@@ -24,38 +24,53 @@ if (!KEY) {
   process.exit(1);
 }
 
-async function main() {
-  console.log(`Probing WordPress at ${URL}\n`);
-
-  // Step 1: list all REST namespaces WordPress exposes
-  console.log("Step 1: All REST namespaces available on this site\n");
+async function probe(label, url, opts = {}) {
+  console.log(`→ ${label}`);
+  console.log(`  ${opts.method || "GET"} ${url}`);
   try {
-    const res = await fetch(`${URL}/wp-json/`, { headers: { Accept: "application/json" } });
-    const data = await res.json();
-    const namespaces = data?.namespaces || [];
-    console.log("Namespaces found:");
-    namespaces.forEach((ns) => console.log(`  - ${ns}`));
-
-    // Filter for anything that looks Icegram-related
-    const icegramNamespaces = namespaces.filter((ns) =>
-      /icegram|email-subscribers|es|ig-es/i.test(ns)
-    );
-    console.log("\nIcegram-looking namespaces:");
-    icegramNamespaces.forEach((ns) => console.log(`  - ${ns}`));
-
-    // Step 2: for each Icegram namespace, list its routes
-    console.log("\nStep 2: Routes under each Icegram namespace\n");
-    for (const ns of icegramNamespaces) {
-      const rsp = await fetch(`${URL}/wp-json/${ns}`, { headers: { Accept: "application/json" } });
-      const body = await rsp.json();
-      console.log(`→ /wp-json/${ns}`);
-      const routes = Object.keys(body?.routes || {});
-      routes.forEach((r) => console.log(`    ${r}`));
-      console.log();
-    }
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    console.log(`  status ${res.status}`);
+    console.log(`  body: ${text.slice(0, 800)}${text.length > 800 ? "..." : ""}\n`);
   } catch (err) {
-    console.error("ERROR:", err.message);
+    console.error(`  ERROR: ${err.message}\n`);
   }
+}
+
+async function main() {
+  console.log(`Probing email-subscribers REST API at ${URL}\n`);
+
+  // Schema for the /subscribers endpoint (shows accepted fields + auth)
+  await probe("Schema for /subscribers", `${URL}/wp-json/email-subscribers/v1/subscribers`, {
+    method: "OPTIONS",
+    headers: { Accept: "application/json" },
+  });
+
+  // Try GET on /subscribers with the API key (sees if we have valid auth)
+  await probe(
+    "GET /subscribers with X-ES-API-KEY header",
+    `${URL}/wp-json/email-subscribers/v1/subscribers`,
+    { headers: { "X-ES-API-KEY": KEY, Accept: "application/json" } }
+  );
+
+  // Try common alternative header names
+  await probe(
+    "GET /subscribers with X-API-KEY header",
+    `${URL}/wp-json/email-subscribers/v1/subscribers`,
+    { headers: { "X-API-KEY": KEY, Accept: "application/json" } }
+  );
+
+  // Try the same with Authorization Bearer
+  await probe(
+    "GET /subscribers with Authorization Bearer",
+    `${URL}/wp-json/email-subscribers/v1/subscribers`,
+    { headers: { Authorization: `Bearer ${KEY}`, Accept: "application/json" } }
+  );
+
+  // See if there's a lists route nested under email-subscribers
+  await probe("GET email-subscribers root", `${URL}/wp-json/email-subscribers/v1`, {
+    headers: { Accept: "application/json" },
+  });
 }
 
 main();
