@@ -24,40 +24,38 @@ if (!KEY) {
   process.exit(1);
 }
 
-const ENDPOINTS = [
-  `${URL}/wp-json/icegram-mailer/v1/lists`,
-  `${URL}/wp-json/ig-es/v1/lists`,
-  `${URL}/wp-json/icegram/v1/lists`,
-];
-
-async function tryEndpoint(endpoint) {
-  try {
-    const res = await fetch(endpoint, {
-      headers: { "X-API-Key": KEY, Accept: "application/json" },
-    });
-    const text = await res.text();
-    return { endpoint, status: res.status, body: text };
-  } catch (err) {
-    return { endpoint, error: err.message };
-  }
-}
-
 async function main() {
-  console.log(`Checking Icegram at ${URL}\n`);
+  console.log(`Probing WordPress at ${URL}\n`);
 
-  for (const ep of ENDPOINTS) {
-    const result = await tryEndpoint(ep);
-    console.log(`→ ${ep}`);
-    if (result.error) {
-      console.log(`  ERROR: ${result.error}\n`);
-      continue;
+  // Step 1: list all REST namespaces WordPress exposes
+  console.log("Step 1: All REST namespaces available on this site\n");
+  try {
+    const res = await fetch(`${URL}/wp-json/`, { headers: { Accept: "application/json" } });
+    const data = await res.json();
+    const namespaces = data?.namespaces || [];
+    console.log("Namespaces found:");
+    namespaces.forEach((ns) => console.log(`  - ${ns}`));
+
+    // Filter for anything that looks Icegram-related
+    const icegramNamespaces = namespaces.filter((ns) =>
+      /icegram|email-subscribers|es|ig-es/i.test(ns)
+    );
+    console.log("\nIcegram-looking namespaces:");
+    icegramNamespaces.forEach((ns) => console.log(`  - ${ns}`));
+
+    // Step 2: for each Icegram namespace, list its routes
+    console.log("\nStep 2: Routes under each Icegram namespace\n");
+    for (const ns of icegramNamespaces) {
+      const rsp = await fetch(`${URL}/wp-json/${ns}`, { headers: { Accept: "application/json" } });
+      const body = await rsp.json();
+      console.log(`→ /wp-json/${ns}`);
+      const routes = Object.keys(body?.routes || {});
+      routes.forEach((r) => console.log(`    ${r}`));
+      console.log();
     }
-    console.log(`  status ${result.status}`);
-    console.log(`  body: ${result.body.slice(0, 500)}${result.body.length > 500 ? "..." : ""}\n`);
+  } catch (err) {
+    console.error("ERROR:", err.message);
   }
-
-  console.log("Look for the response that shows a list of lists with IDs.");
-  console.log('Then set ICEGRAM_LIST_ID="<id>" in .env.local.');
 }
 
 main();
