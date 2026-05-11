@@ -18,10 +18,18 @@ function getSession() {
   if (typeof window === "undefined") return { sessionId: null, hasLead: false };
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+    console.log("[coach] localStorage raw:", raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      console.log("[coach] parsed session:", parsed);
+      return parsed;
+    }
+  } catch (err) {
+    console.error("[coach] getSession error:", err);
+  }
   const fresh = { sessionId: genId(), hasLead: false };
   localStorage.setItem(SESSION_KEY, JSON.stringify(fresh));
+  console.log("[coach] created fresh session:", fresh);
   return fresh;
 }
 
@@ -57,7 +65,8 @@ export default function WebsiteCoach() {
   useEffect(() => {
     const session = getSession();
     setSessionId(session.sessionId);
-    setHasLead(session.hasLead || false);
+    // TEMP DEBUG: force hasLead false on every page load so form always appears
+    setHasLead(false);
   }, []);
 
   useEffect(() => {
