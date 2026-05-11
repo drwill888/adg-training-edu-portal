@@ -1,9 +1,21 @@
 #!/usr/bin/env node
 // Seed the website coaching agent knowledge base.
-// Usage:
-//   COACH_INGEST_URL=http://localhost:3000/api/coach/ingest \
-//   COACH_INGEST_TOKEN=<your-token> \
-//   node scripts/seed-coach-kb.js
+// Usage: node scripts/seed-coach-kb.js
+// Reads COACH_INGEST_URL and COACH_INGEST_TOKEN from .env.local automatically.
+
+const fs = require("fs");
+const path = require("path");
+
+// Load .env.local into process.env
+const envPath = path.resolve(__dirname, "../.env.local");
+if (fs.existsSync(envPath)) {
+  fs.readFileSync(envPath, "utf8")
+    .split("\n")
+    .forEach((line) => {
+      const match = line.match(/^([^#=]+)=(.*)$/);
+      if (match) process.env[match[1].trim()] = match[2].trim().replace(/^["']|["']$/g, "");
+    });
+}
 
 const INGEST_URL = process.env.COACH_INGEST_URL || "http://localhost:3000/api/coach/ingest";
 const TOKEN = process.env.COACH_INGEST_TOKEN;
