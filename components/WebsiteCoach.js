@@ -258,7 +258,7 @@ export default function WebsiteCoach() {
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>ADG Guide</div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.2 }}>
-                  Awakening Destiny Global
+                  [debug] msgs:{assistantCount} hasLead:{String(hasLead)} form:{String(showLeadForm)}
                 </div>
               </div>
             </div>
