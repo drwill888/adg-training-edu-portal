@@ -7,6 +7,7 @@ import { colors, fonts } from '../styles/tokens'
 
 const publicPages = [
   '/login', '/auth/callback', '/auth/reset-password', '/', '/assessment',
+  '/coach-preview',
   '/called-to-carry',
   '/called-to-carry/assessment',
   '/called-to-carry/assessment/start',
