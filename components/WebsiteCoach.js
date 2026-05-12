@@ -89,6 +89,8 @@ function saveSession(updates) {
 export default function WebsiteCoach() {
   // When loaded inside an iframe (e.g. embedded on WordPress), skip drag/position/scroll logic
   const isEmbed = typeof window !== "undefined" && window.parent !== window;
+  // In embed mode the iframe is narrow but should never trigger mobile-fullscreen layout
+  const effectiveMobile = isMobile && !isEmbed;
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -159,7 +161,7 @@ export default function WebsiteCoach() {
   const panelRef = useRef(null);
   const dragState = useRef(null);
   function onDragStart(e) {
-    if (isMobile) return;
+    if (effectiveMobile) return;
     const target = e.target;
     if (target.closest("button")) return;
     if (!panelRef.current) return;
@@ -373,7 +375,7 @@ export default function WebsiteCoach() {
             color: NAVY,
             border: "none",
             borderRadius: 999,
-            padding: (minimized || isMobile) && !isEmbed ? "12px 14px" : "12px 20px",
+            padding: minimized || effectiveMobile ? "12px 14px" : "12px 20px",
             fontWeight: 700,
             fontSize: 14,
             cursor: "pointer",
@@ -385,7 +387,7 @@ export default function WebsiteCoach() {
           }}
         >
           <span style={{ fontSize: 18 }}>✦</span>
-          {!(minimized || (isMobile && !isEmbed)) && <span>Ask {COACH_NAME}</span>}
+          {!(minimized || effectiveMobile) && <span>Ask {COACH_NAME}</span>}
         </button>
       )}
 
@@ -395,16 +397,16 @@ export default function WebsiteCoach() {
           ref={panelRef}
           style={{
             position: "fixed",
-            ...(isMobile
+            ...(effectiveMobile
               ? { top: 0, left: 0, right: 0, bottom: 0 }
               : positionStyle(position)),
             zIndex: 9999,
-            width: isMobile ? "100vw" : 380,
-            maxWidth: isMobile ? "100vw" : "calc(100vw - 32px)",
-            height: isMobile ? "100vh" : 560,
-            maxHeight: isMobile ? "100vh" : "calc(100vh - 48px)",
+            width: effectiveMobile ? "100vw" : 380,
+            maxWidth: effectiveMobile ? "100vw" : "calc(100vw - 32px)",
+            height: effectiveMobile ? "100vh" : 560,
+            maxHeight: effectiveMobile ? "100vh" : "calc(100vh - 48px)",
             background: WHITE,
-            borderRadius: isMobile ? 0 : 16,
+            borderRadius: effectiveMobile ? 0 : 16,
             boxShadow: "0 8px 40px rgba(2,26,53,0.25)",
             display: "flex",
             flexDirection: "column",
@@ -426,7 +428,7 @@ export default function WebsiteCoach() {
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
-              cursor: isMobile ? "default" : "grab",
+              cursor: effectiveMobile ? "default" : "grab",
               userSelect: "none",
               WebkitUserSelect: "none",
               touchAction: "none",
@@ -456,7 +458,7 @@ export default function WebsiteCoach() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {!isMobile && (
+              {!effectiveMobile && (
                 <button
                   onClick={cyclePosition}
                   title="Snap to next corner (or drag the header to move freely)"
