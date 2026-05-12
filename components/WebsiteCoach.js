@@ -168,7 +168,9 @@ export default function WebsiteCoach() {
     if (isEmbed) {
       dragState.current = { embed: true };
       window.parent.postMessage({ type: "EZRA_DRAG_START", clientX: point.clientX, clientY: point.clientY }, "*");
+      window.addEventListener("mousemove", onDragMove);
       window.addEventListener("mouseup", onDragEnd);
+      window.addEventListener("touchmove", onDragMove, { passive: false });
       window.addEventListener("touchend", onDragEnd);
       return;
     }
@@ -187,9 +189,13 @@ export default function WebsiteCoach() {
     window.addEventListener("touchend", onDragEnd);
   }
   function onDragMove(e) {
-    if (!dragState.current || dragState.current.embed) return;
+    if (!dragState.current) return;
     if (e.cancelable) e.preventDefault();
     const point = e.touches?.[0] || e;
+    if (dragState.current.embed) {
+      window.parent.postMessage({ type: "EZRA_DRAG_MOVE", clientX: point.clientX, clientY: point.clientY }, "*");
+      return;
+    }
     const { offsetX, offsetY, width, height } = dragState.current;
     const maxX = window.innerWidth - width;
     const maxY = window.innerHeight - height;
@@ -203,7 +209,9 @@ export default function WebsiteCoach() {
     dragState.current = null;
     if (wasEmbed) {
       window.parent.postMessage({ type: "EZRA_DRAG_END" }, "*");
+      window.removeEventListener("mousemove", onDragMove);
       window.removeEventListener("mouseup", onDragEnd);
+      window.removeEventListener("touchmove", onDragMove);
       window.removeEventListener("touchend", onDragEnd);
       return;
     }
@@ -365,7 +373,7 @@ export default function WebsiteCoach() {
             color: NAVY,
             border: "none",
             borderRadius: 999,
-            padding: minimized || isMobile ? "12px 14px" : "12px 20px",
+            padding: (minimized || isMobile) && !isEmbed ? "12px 14px" : "12px 20px",
             fontWeight: 700,
             fontSize: 14,
             cursor: "pointer",
@@ -377,7 +385,7 @@ export default function WebsiteCoach() {
           }}
         >
           <span style={{ fontSize: 18 }}>✦</span>
-          {!(minimized || isMobile) && <span>Ask {COACH_NAME}</span>}
+          {!(minimized || (isMobile && !isEmbed)) && <span>Ask {COACH_NAME}</span>}
         </button>
       )}
 
