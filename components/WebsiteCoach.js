@@ -373,6 +373,8 @@ export default function WebsiteCoach() {
           <div
             onMouseDown={onDragStart}
             onTouchStart={onDragStart}
+            onDragStart={(e) => e.preventDefault()}
+            draggable={false}
             style={{
               background: NAVY,
               color: WHITE,
@@ -381,8 +383,9 @@ export default function WebsiteCoach() {
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
-              cursor: isMobile ? "default" : "move",
+              cursor: isMobile ? "default" : "grab",
               userSelect: "none",
+              WebkitUserSelect: "none",
               touchAction: "none",
             }}
           >
