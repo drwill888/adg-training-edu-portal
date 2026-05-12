@@ -4,7 +4,7 @@ import { addToIcegramList, isIcegramConfigured } from "@/lib/coach/icegram";
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { conversationId, email, firstName, interest, consentMarketing } = req.body;
+  const { conversationId, email, firstName, lastName, interest, consentMarketing } = req.body;
   if (!email) return res.status(400).json({ error: "email is required" });
   if (!supabaseAdmin) return res.status(500).json({ error: "Database is not configured" });
 
@@ -15,6 +15,7 @@ export default async function handler(req, res) {
         conversation_id: conversationId || null,
         email,
         first_name: firstName || null,
+        last_name: lastName || null,
         interest: interest || null,
         consent_marketing: Boolean(consentMarketing),
       })
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
     // Push to Make webhook if the visitor opted in to marketing.
     let webhook = null;
     if (consentMarketing && isIcegramConfigured()) {
-      webhook = await addToIcegramList({ email, firstName, interest });
+      webhook = await addToIcegramList({ email, firstName, lastName, interest });
     }
 
     return res.status(200).json({ success: true, leadId: lead.id, webhook });

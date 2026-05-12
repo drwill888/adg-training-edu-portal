@@ -51,6 +51,7 @@ export default function WebsiteCoach() {
   const [hasLead, setHasLead] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadName, setLeadName] = useState("");
+  const [leadLastName, setLeadLastName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadInterest, setLeadInterest] = useState("");
   const [consentMarketing, setConsentMarketing] = useState(true);
@@ -133,6 +134,7 @@ export default function WebsiteCoach() {
           conversationId,
           email: leadEmail,
           firstName: leadName,
+          lastName: leadLastName,
           interest: leadInterest,
           consentMarketing,
         }),
@@ -412,6 +414,12 @@ export default function WebsiteCoach() {
                     placeholder="First name"
                     value={leadName}
                     onChange={(e) => setLeadName(e.target.value)}
+                    style={inputStyle}
+                  />
+                  <input
+                    placeholder="Last name"
+                    value={leadLastName}
+                    onChange={(e) => setLeadLastName(e.target.value)}
                     style={inputStyle}
                   />
                   <input
