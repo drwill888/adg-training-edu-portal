@@ -2,12 +2,33 @@
 import '../styles/globals.css'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import dynamic from 'next/dynamic'
 import { supabase } from '../lib/supabase'
 import { colors, fonts } from '../styles/tokens'
 
+// Ezra coach widget is global, but hidden on routes where it would distract.
+const WebsiteCoach = dynamic(() => import('../components/WebsiteCoach'), { ssr: false })
+
+const COACH_EXCLUDE_PREFIXES = [
+  '/admin',
+  '/login',
+  '/auth',
+  '/checkout',
+  '/success',
+  '/training',
+  '/modules',
+  '/training-bot',
+  '/mid-journey',
+  '/final-blueprint',
+  '/dashboard',
+  '/api',
+]
+function shouldShowCoach(pathname) {
+  return !COACH_EXCLUDE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
+}
+
 const publicPages = [
   '/login', '/auth/callback', '/auth/reset-password', '/', '/assessment',
-  '/coach-preview',
   '/called-to-carry',
   '/called-to-carry/assessment',
   '/called-to-carry/assessment/start',
@@ -87,5 +108,10 @@ export default function App({ Component, pageProps }) {
     return null
   }
 
-  return <Component {...pageProps} session={session} />
+  return (
+    <>
+      <Component {...pageProps} session={session} />
+      {shouldShowCoach(router.pathname) && <WebsiteCoach />}
+    </>
+  )
 }

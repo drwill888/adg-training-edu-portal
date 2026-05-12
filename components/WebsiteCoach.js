@@ -9,13 +9,17 @@ const WHITE = "#FFFFFF";
 
 const SOFT_LEAD_AFTER = 2; // show soft lead form after this many assistant replies
 const SESSION_KEY = "adg_coach_session";
-const POSITION_KEY = "adg_coach_position"; // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+const POSITION_KEY = "adg_coach_position"; // corner name OR {x,y} pixel offsets
 const COACH_NAME = "Ezra";
 const COACH_TAGLINE =
   "Spiritual intelligence for your next faithful step";
 const POSITIONS = ["bottom-right", "bottom-left", "top-right", "top-left"];
 
+// Returns CSS positioning style for a corner name or {x, y} pixel offsets.
 function positionStyle(pos) {
+  if (pos && typeof pos === "object" && "x" in pos && "y" in pos) {
+    return { left: pos.x, top: pos.y };
+  }
   switch (pos) {
     case "bottom-left":
       return { bottom: 24, left: 24 };
@@ -27,6 +31,28 @@ function positionStyle(pos) {
     default:
       return { bottom: 24, right: 24 };
   }
+}
+
+function loadPosition() {
+  try {
+    const raw = localStorage.getItem(POSITION_KEY);
+    if (!raw) return "bottom-right";
+    if (raw.startsWith("{")) {
+      const p = JSON.parse(raw);
+      if (typeof p.x === "number" && typeof p.y === "number") return p;
+    }
+    if (POSITIONS.includes(raw)) return raw;
+  } catch {}
+  return "bottom-right";
+}
+
+function savePosition(pos) {
+  try {
+    localStorage.setItem(
+      POSITION_KEY,
+      typeof pos === "string" ? pos : JSON.stringify(pos)
+    );
+  } catch {}
 }
 
 function genId() {
@@ -90,10 +116,7 @@ export default function WebsiteCoach() {
     setSessionId(session.sessionId);
     setHasLead(Boolean(session.hasLead));
 
-    try {
-      const savedPos = localStorage.getItem(POSITION_KEY);
-      if (savedPos && POSITIONS.includes(savedPos)) setPosition(savedPos);
-    } catch {}
+    setPosition(loadPosition());
 
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
@@ -116,12 +139,60 @@ export default function WebsiteCoach() {
   }, []);
 
   function cyclePosition() {
-    const idx = POSITIONS.indexOf(position);
+    // If currently free-dragged, snap back to bottom-right first
+    const current = typeof position === "string" ? position : "bottom-right";
+    const idx = POSITIONS.indexOf(current);
     const next = POSITIONS[(idx + 1) % POSITIONS.length];
     setPosition(next);
-    try {
-      localStorage.setItem(POSITION_KEY, next);
-    } catch {}
+    savePosition(next);
+  }
+
+  // ── Drag-to-move ────────────────────────────────────────────
+  const dragState = useRef(null);
+  function onDragStart(e) {
+    if (isMobile) return;
+    const target = e.target;
+    // Don't start dragging when clicking a button inside the header
+    if (target.closest("button")) return;
+    e.preventDefault();
+    const point = e.touches?.[0] || e;
+    const rect = e.currentTarget.parentElement.parentElement.getBoundingClientRect();
+    dragState.current = {
+      offsetX: point.clientX - rect.left,
+      offsetY: point.clientY - rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    document.body.style.userSelect = "none";
+    window.addEventListener("mousemove", onDragMove);
+    window.addEventListener("mouseup", onDragEnd);
+    window.addEventListener("touchmove", onDragMove, { passive: false });
+    window.addEventListener("touchend", onDragEnd);
+  }
+  function onDragMove(e) {
+    if (!dragState.current) return;
+    if (e.cancelable) e.preventDefault();
+    const point = e.touches?.[0] || e;
+    const { offsetX, offsetY, width, height } = dragState.current;
+    const maxX = window.innerWidth - width;
+    const maxY = window.innerHeight - height;
+    const x = Math.max(0, Math.min(maxX, point.clientX - offsetX));
+    const y = Math.max(0, Math.min(maxY, point.clientY - offsetY));
+    setPosition({ x, y });
+  }
+  function onDragEnd() {
+    if (!dragState.current) return;
+    dragState.current = null;
+    document.body.style.userSelect = "";
+    window.removeEventListener("mousemove", onDragMove);
+    window.removeEventListener("mouseup", onDragEnd);
+    window.removeEventListener("touchmove", onDragMove);
+    window.removeEventListener("touchend", onDragEnd);
+    // Persist whatever position we settled on
+    setPosition((p) => {
+      savePosition(p);
+      return p;
+    });
   }
 
   useEffect(() => {
@@ -298,8 +369,10 @@ export default function WebsiteCoach() {
             border: `1px solid ${GOLD}`,
           }}
         >
-          {/* Header */}
+          {/* Header — drag handle on desktop */}
           <div
+            onMouseDown={onDragStart}
+            onTouchStart={onDragStart}
             style={{
               background: NAVY,
               color: WHITE,
@@ -308,6 +381,9 @@ export default function WebsiteCoach() {
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
+              cursor: isMobile ? "default" : "move",
+              userSelect: "none",
+              touchAction: "none",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -337,7 +413,7 @@ export default function WebsiteCoach() {
               {!isMobile && (
                 <button
                   onClick={cyclePosition}
-                  title="Move to another corner"
+                  title="Snap to next corner (or drag the header to move freely)"
                   aria-label="Move widget position"
                   style={{
                     background: "transparent",
