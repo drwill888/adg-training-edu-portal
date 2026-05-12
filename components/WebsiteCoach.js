@@ -91,7 +91,14 @@ export default function WebsiteCoach() {
   const isEmbed = typeof window !== "undefined" && window.parent !== window;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      intro: true,
+      content:
+        "I am Ezra.\n\nI am named after Ezra the priest and scribe in the Bible — whose name means \"help\" or \"helper.\" In that spirit, I am here to help.\n\nEssentially, I am Will's scribe. I have been formed from his writings, teachings, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.\n\nI can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.\n\nWhat would you like to ask?",
+    },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
@@ -114,7 +121,7 @@ export default function WebsiteCoach() {
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
-  const assistantCount = messages.filter((m) => m.role === "assistant").length;
+  const assistantCount = messages.filter((m) => m.role === "assistant" && !m.intro).length;
 
   useEffect(() => {
     const session = getSession();
@@ -529,31 +536,6 @@ export default function WebsiteCoach() {
               background: CREAM,
             }}
           >
-            {messages.length === 0 && (
-              <div
-                style={{
-                  color: NAVY,
-                  fontSize: 14,
-                  marginTop: 16,
-                  lineHeight: 1.65,
-                  padding: "0 4px",
-                }}
-              >
-                <div style={{ textAlign: "center", fontSize: 28, marginBottom: 10 }}>✦</div>
-                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>I am Ezra.</p>
-                <p style={{ marginBottom: 8 }}>
-                  I am named after Ezra the priest and scribe in the Bible — whose name means <strong>&#8220;help&#8221;</strong> or <strong>&#8220;helper.&#8221;</strong> In that spirit, I am here to help.
-                </p>
-                <p style={{ marginBottom: 8 }}>
-                  Essentially, I am Will&#8217;s scribe &#8212; formed from his writings, teaching, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.
-                </p>
-                <p style={{ marginBottom: 8 }}>
-                  I can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.
-                </p>
-                <p style={{ color: GRAY, fontSize: 13, marginTop: 4 }}>What would you like to ask Ezra?</p>
-              </div>
-            )}
-
             {messages.map((m, i) => (
               <div
                 key={i}
