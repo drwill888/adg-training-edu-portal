@@ -87,6 +87,9 @@ function saveSession(updates) {
 }
 
 export default function WebsiteCoach() {
+  // When loaded inside an iframe (e.g. embedded on WordPress), skip drag/position/scroll logic
+  const isEmbed = typeof window !== "undefined" && window.parent !== window;
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -116,13 +119,15 @@ export default function WebsiteCoach() {
     setSessionId(session.sessionId);
     setHasLead(Boolean(session.hasLead));
 
-    setPosition(loadPosition());
+    if (!isEmbed) setPosition(loadPosition());
 
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
-    // Auto-minimize on scroll past hero (only when widget is closed)
+    if (isEmbed) return () => window.removeEventListener("resize", checkMobile);
+
+    // Auto-minimize on scroll past hero (only when widget is closed, not in embed)
     let lastY = 0;
     const onScroll = () => {
       const y = window.scrollY || 0;
@@ -384,10 +389,10 @@ export default function WebsiteCoach() {
             border: `1px solid ${GOLD}`,
           }}
         >
-          {/* Header — drag handle on desktop */}
+          {/* Header — drag handle on desktop (disabled in embed mode) */}
           <div
-            onMouseDown={onDragStart}
-            onTouchStart={onDragStart}
+            onMouseDown={isEmbed ? undefined : onDragStart}
+            onTouchStart={isEmbed ? undefined : onDragStart}
             onDragStart={(e) => e.preventDefault()}
             draggable={false}
             style={{
@@ -398,7 +403,7 @@ export default function WebsiteCoach() {
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
-              cursor: isMobile ? "default" : "grab",
+              cursor: isEmbed || isMobile ? "default" : "grab",
               userSelect: "none",
               WebkitUserSelect: "none",
               touchAction: "none",
@@ -428,7 +433,7 @@ export default function WebsiteCoach() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {!isMobile && (
+              {!isMobile && !isEmbed && (
                 <button
                   onClick={cyclePosition}
                   title="Snap to next corner (or drag the header to move freely)"
