@@ -148,15 +148,17 @@ export default function WebsiteCoach() {
   }
 
   // ── Drag-to-move ────────────────────────────────────────────
+  const panelRef = useRef(null);
   const dragState = useRef(null);
   function onDragStart(e) {
     if (isMobile) return;
     const target = e.target;
     // Don't start dragging when clicking a button inside the header
     if (target.closest("button")) return;
+    if (!panelRef.current) return;
     e.preventDefault();
     const point = e.touches?.[0] || e;
-    const rect = e.currentTarget.parentElement.parentElement.getBoundingClientRect();
+    const rect = panelRef.current.getBoundingClientRect();
     dragState.current = {
       offsetX: point.clientX - rect.left,
       offsetY: point.clientY - rect.top,
@@ -164,6 +166,7 @@ export default function WebsiteCoach() {
       height: rect.height,
     };
     document.body.style.userSelect = "none";
+    document.body.style.cursor = "grabbing";
     window.addEventListener("mousemove", onDragMove);
     window.addEventListener("mouseup", onDragEnd);
     window.addEventListener("touchmove", onDragMove, { passive: false });
@@ -184,6 +187,7 @@ export default function WebsiteCoach() {
     if (!dragState.current) return;
     dragState.current = null;
     document.body.style.userSelect = "";
+    document.body.style.cursor = "";
     window.removeEventListener("mousemove", onDragMove);
     window.removeEventListener("mouseup", onDragEnd);
     window.removeEventListener("touchmove", onDragMove);
@@ -350,6 +354,7 @@ export default function WebsiteCoach() {
       {/* Chat panel */}
       {isOpen && (
         <div
+          ref={panelRef}
           style={{
             position: "fixed",
             ...(isMobile
