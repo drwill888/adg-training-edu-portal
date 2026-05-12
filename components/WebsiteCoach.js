@@ -403,7 +403,7 @@ export default function WebsiteCoach() {
             zIndex: 9999,
             width: effectiveMobile ? "100vw" : 380,
             maxWidth: effectiveMobile ? "100vw" : "calc(100vw - 32px)",
-            height: effectiveMobile ? "100vh" : 560,
+            height: effectiveMobile ? "100vh" : 448,
             maxHeight: effectiveMobile ? "100vh" : "calc(100vh - 48px)",
             background: WHITE,
             borderRadius: effectiveMobile ? 0 : 16,
