@@ -330,6 +330,9 @@ export default function WebsiteCoach() {
       {!isOpen && (
         <button
           onClick={() => {
+            if (typeof window !== "undefined" && window.parent !== window) {
+              window.parent.postMessage({ type: "EZRA_RESIZE", isOpen: true }, "*");
+            }
             setIsOpen(true);
             setMinimized(false);
           }}
@@ -463,7 +466,12 @@ export default function WebsiteCoach() {
                 </button>
               )}
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.parent !== window) {
+                    window.parent.postMessage({ type: "EZRA_RESIZE", isOpen: false }, "*");
+                  }
+                  setIsOpen(false);
+                }}
                 style={{
                   background: "transparent",
                   border: "none",
