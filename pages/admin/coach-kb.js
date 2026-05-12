@@ -256,7 +256,11 @@ export default function CoachKbAdmin() {
               Coach Knowledge Base
             </h1>
             <p style={{ color: "rgba(2,26,53,0.6)", fontSize: 13, margin: "4px 0 0" }}>
-              Add or edit documents the ADG Guide draws from when answering visitors.{" "}
+              Add or edit documents Ezra draws from when answering visitors.{" "}
+              <a href="/admin/coach-health" style={{ color: NAVY, fontWeight: 600 }}>
+                Coach health →
+              </a>
+              {" · "}
               <a
                 href="/admin/coach-conversations"
                 style={{ color: NAVY, fontWeight: 600 }}

@@ -27,11 +27,11 @@ export default function CoachPreview() {
             letterSpacing: -0.5,
           }}
         >
-          Website Coaching Agent
+          Ezra — Coach Preview
         </h1>
         <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(253,248,240,0.75)", margin: 0 }}>
-          The ADG Guide is live in the bottom-right corner. Click{" "}
-          <strong style={{ color: "#FDD20D" }}>"Ask the ADG Guide"</strong> to start a
+          Ezra is live in the corner of the screen. Click{" "}
+          <strong style={{ color: "#FDD20D" }}>"Ask Ezra"</strong> to start a
           conversation, test lead capture, and explore the knowledge base.
         </p>
 

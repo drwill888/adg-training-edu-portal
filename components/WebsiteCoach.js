@@ -9,6 +9,25 @@ const WHITE = "#FFFFFF";
 
 const SOFT_LEAD_AFTER = 2; // show soft lead form after this many assistant replies
 const SESSION_KEY = "adg_coach_session";
+const POSITION_KEY = "adg_coach_position"; // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+const COACH_NAME = "Ezra";
+const COACH_TAGLINE =
+  "Spiritual intelligence for your next faithful step";
+const POSITIONS = ["bottom-right", "bottom-left", "top-right", "top-left"];
+
+function positionStyle(pos) {
+  switch (pos) {
+    case "bottom-left":
+      return { bottom: 24, left: 24 };
+    case "top-right":
+      return { top: 24, right: 24 };
+    case "top-left":
+      return { top: 24, left: 24 };
+    case "bottom-right":
+    default:
+      return { bottom: 24, right: 24 };
+  }
+}
 
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -58,6 +77,9 @@ export default function WebsiteCoach() {
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [gated, setGated] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [position, setPosition] = useState("bottom-right");
+  const [minimized, setMinimized] = useState(false); // scroll-driven mini state
+  const [isMobile, setIsMobile] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -66,9 +88,41 @@ export default function WebsiteCoach() {
   useEffect(() => {
     const session = getSession();
     setSessionId(session.sessionId);
-    // TEMP DEBUG: force hasLead false on every page load so form always appears
-    setHasLead(false);
+    setHasLead(Boolean(session.hasLead));
+
+    try {
+      const savedPos = localStorage.getItem(POSITION_KEY);
+      if (savedPos && POSITIONS.includes(savedPos)) setPosition(savedPos);
+    } catch {}
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    // Auto-minimize on scroll past hero (only when widget is closed)
+    let lastY = 0;
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      if (y > 200 && y > lastY + 30) setMinimized(true);
+      else if (y < 100) setMinimized(false);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
+
+  function cyclePosition() {
+    const idx = POSITIONS.indexOf(position);
+    const next = POSITIONS[(idx + 1) % POSITIONS.length];
+    setPosition(next);
+    try {
+      localStorage.setItem(POSITION_KEY, next);
+    } catch {}
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,7 +152,7 @@ export default function WebsiteCoach() {
       const res = await fetch("/api/coach/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, question: q, hasLead }),
+        body: JSON.stringify({ sessionId, question: q, hasLead, email: hasLead ? leadEmail : null }),
       });
       const data = await res.json();
 
@@ -190,20 +244,23 @@ export default function WebsiteCoach() {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — collapsed bubble on mobile or when scrolled away */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            setMinimized(false);
+          }}
+          aria-label={`Ask ${COACH_NAME}`}
           style={{
             position: "fixed",
-            bottom: 24,
-            right: 24,
+            ...positionStyle(position),
             zIndex: 9999,
             background: GOLD,
             color: NAVY,
             border: "none",
             borderRadius: 999,
-            padding: "12px 20px",
+            padding: minimized || isMobile ? "12px 14px" : "12px 20px",
             fontWeight: 700,
             fontSize: 14,
             cursor: "pointer",
@@ -211,9 +268,11 @@ export default function WebsiteCoach() {
             display: "flex",
             alignItems: "center",
             gap: 8,
+            transition: "padding 200ms ease",
           }}
         >
-          <span style={{ fontSize: 18 }}>💬</span> Ask the ADG Guide
+          <span style={{ fontSize: 18 }}>✦</span>
+          {!(minimized || isMobile) && <span>Ask {COACH_NAME}</span>}
         </button>
       )}
 
@@ -222,15 +281,16 @@ export default function WebsiteCoach() {
         <div
           style={{
             position: "fixed",
-            bottom: 24,
-            right: 24,
+            ...(isMobile
+              ? { top: 0, left: 0, right: 0, bottom: 0 }
+              : positionStyle(position)),
             zIndex: 9999,
-            width: 380,
-            maxWidth: "calc(100vw - 32px)",
-            height: 560,
-            maxHeight: "calc(100vh - 48px)",
+            width: isMobile ? "100vw" : 380,
+            maxWidth: isMobile ? "100vw" : "calc(100vw - 32px)",
+            height: isMobile ? "100vh" : 560,
+            maxHeight: isMobile ? "100vh" : "calc(100vh - 48px)",
             background: WHITE,
-            borderRadius: 16,
+            borderRadius: isMobile ? 0 : 16,
             boxShadow: "0 8px 40px rgba(2,26,53,0.25)",
             display: "flex",
             flexDirection: "column",
@@ -267,13 +327,31 @@ export default function WebsiteCoach() {
                 ✦
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>ADG Guide</div>
+                <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>{COACH_NAME}</div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.2 }}>
-                  Your guide to ADG
+                  {COACH_TAGLINE}
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {!isMobile && (
+                <button
+                  onClick={cyclePosition}
+                  title="Move to another corner"
+                  aria-label="Move widget position"
+                  style={{
+                    background: "transparent",
+                    border: `1px solid rgba(253,210,13,0.4)`,
+                    color: GOLD,
+                    borderRadius: 6,
+                    padding: "4px 8px",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                >
+                  ⤢
+                </button>
+              )}
               {conversationId && messages.length > 1 && (
                 <button
                   onClick={emailSummary}
@@ -334,10 +412,9 @@ export default function WebsiteCoach() {
               >
                 <div style={{ fontSize: 28, marginBottom: 8 }}>✦</div>
                 <div style={{ fontWeight: 600, color: NAVY, marginBottom: 4 }}>
-                  Welcome to ADG
+                  I'm {COACH_NAME}.
                 </div>
-                Ask me anything about our programs, the 5C Blueprint, or where to start your
-                leadership journey.
+                {COACH_TAGLINE}. What's on your heart today?
               </div>
             )}
 

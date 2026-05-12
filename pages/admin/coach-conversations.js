@@ -176,6 +176,10 @@ export default function CoachConversationsAdmin() {
           <p style={{ color: "rgba(2,26,53,0.6)", fontSize: 13, margin: "4px 0 0" }}>
             Review what visitors are asking. Promote a good answer into the knowledge
             base so future visitors get it consistently.{" "}
+            <a href="/admin/coach-health" style={{ color: NAVY, fontWeight: 600 }}>
+              Coach health →
+            </a>
+            {" · "}
             <a href="/admin/coach-kb" style={{ color: NAVY, fontWeight: 600 }}>
               Manage knowledge base →
             </a>
