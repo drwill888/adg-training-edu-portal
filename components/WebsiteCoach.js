@@ -144,12 +144,15 @@ export default function WebsiteCoach() {
   }, []);
 
   function cyclePosition() {
-    // If currently free-dragged, snap back to bottom-right first
     const current = typeof position === "string" ? position : "bottom-right";
     const idx = POSITIONS.indexOf(current);
     const next = POSITIONS[(idx + 1) % POSITIONS.length];
     setPosition(next);
-    savePosition(next);
+    if (isEmbed) {
+      window.parent.postMessage({ type: "EZRA_CORNER", corner: next }, "*");
+    } else {
+      savePosition(next);
+    }
   }
 
   // ── Drag-to-move ────────────────────────────────────────────
@@ -158,11 +161,17 @@ export default function WebsiteCoach() {
   function onDragStart(e) {
     if (isMobile) return;
     const target = e.target;
-    // Don't start dragging when clicking a button inside the header
     if (target.closest("button")) return;
     if (!panelRef.current) return;
     e.preventDefault();
     const point = e.touches?.[0] || e;
+    if (isEmbed) {
+      dragState.current = { embed: true };
+      window.parent.postMessage({ type: "EZRA_DRAG_START", clientX: point.clientX, clientY: point.clientY }, "*");
+      window.addEventListener("mouseup", onDragEnd);
+      window.addEventListener("touchend", onDragEnd);
+      return;
+    }
     const rect = panelRef.current.getBoundingClientRect();
     dragState.current = {
       offsetX: point.clientX - rect.left,
@@ -178,7 +187,7 @@ export default function WebsiteCoach() {
     window.addEventListener("touchend", onDragEnd);
   }
   function onDragMove(e) {
-    if (!dragState.current) return;
+    if (!dragState.current || dragState.current.embed) return;
     if (e.cancelable) e.preventDefault();
     const point = e.touches?.[0] || e;
     const { offsetX, offsetY, width, height } = dragState.current;
@@ -190,14 +199,20 @@ export default function WebsiteCoach() {
   }
   function onDragEnd() {
     if (!dragState.current) return;
+    const wasEmbed = dragState.current.embed;
     dragState.current = null;
+    if (wasEmbed) {
+      window.parent.postMessage({ type: "EZRA_DRAG_END" }, "*");
+      window.removeEventListener("mouseup", onDragEnd);
+      window.removeEventListener("touchend", onDragEnd);
+      return;
+    }
     document.body.style.userSelect = "";
     document.body.style.cursor = "";
     window.removeEventListener("mousemove", onDragMove);
     window.removeEventListener("mouseup", onDragEnd);
     window.removeEventListener("touchmove", onDragMove);
     window.removeEventListener("touchend", onDragEnd);
-    // Persist whatever position we settled on
     setPosition((p) => {
       savePosition(p);
       return p;
@@ -391,8 +406,8 @@ export default function WebsiteCoach() {
         >
           {/* Header — drag handle on desktop (disabled in embed mode) */}
           <div
-            onMouseDown={isEmbed ? undefined : onDragStart}
-            onTouchStart={isEmbed ? undefined : onDragStart}
+            onMouseDown={onDragStart}
+            onTouchStart={onDragStart}
             onDragStart={(e) => e.preventDefault()}
             draggable={false}
             style={{
@@ -403,7 +418,7 @@ export default function WebsiteCoach() {
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
-              cursor: isEmbed || isMobile ? "default" : "grab",
+              cursor: isMobile ? "default" : "grab",
               userSelect: "none",
               WebkitUserSelect: "none",
               touchAction: "none",
@@ -433,7 +448,7 @@ export default function WebsiteCoach() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {!isMobile && !isEmbed && (
+              {!isMobile && (
                 <button
                   onClick={cyclePosition}
                   title="Snap to next corner (or drag the header to move freely)"
