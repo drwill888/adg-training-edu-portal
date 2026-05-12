@@ -532,18 +532,25 @@ export default function WebsiteCoach() {
             {messages.length === 0 && (
               <div
                 style={{
-                  textAlign: "center",
-                  color: GRAY,
+                  color: NAVY,
                   fontSize: 14,
-                  marginTop: 40,
-                  lineHeight: 1.6,
+                  marginTop: 16,
+                  lineHeight: 1.65,
+                  padding: "0 4px",
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 8 }}>✦</div>
-                <div style={{ fontWeight: 600, color: NAVY, marginBottom: 4 }}>
-                  I'm {COACH_NAME}.
-                </div>
-                {COACH_TAGLINE}. What's on your heart today?
+                <div style={{ textAlign: "center", fontSize: 28, marginBottom: 10 }}>✦</div>
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>I am Ezra.</p>
+                <p style={{ marginBottom: 8 }}>
+                  I am named after Ezra the priest and scribe in the Bible — whose name means <strong>&#8220;help&#8221;</strong> or <strong>&#8220;helper.&#8221;</strong> In that spirit, I am here to help.
+                </p>
+                <p style={{ marginBottom: 8 }}>
+                  Essentially, I am Will&#8217;s scribe &#8212; formed from his writings, teaching, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.
+                </p>
+                <p style={{ marginBottom: 8 }}>
+                  I can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.
+                </p>
+                <p style={{ color: GRAY, fontSize: 13, marginTop: 4 }}>What would you like to ask Ezra?</p>
               </div>
             )}
 
