@@ -40,6 +40,11 @@ export default function CoachKbAdmin() {
   const [editing, setEditing] = useState(null); // {id?, title, source, content}
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const [importMode, setImportMode] = useState(null); // null | "url" | "bulk" | "pdf"
+  const [importUrl, setImportUrl] = useState("");
+  const [importBulk, setImportBulk] = useState("");
+  const [importBusy, setImportBusy] = useState(false);
+  const [importResults, setImportResults] = useState([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -109,6 +114,89 @@ export default function CoachKbAdmin() {
     }
   }
 
+  async function runImportUrl() {
+    if (!importUrl.trim()) return setError("Paste a URL first.");
+    setImportBusy(true);
+    setError("");
+    setImportResults([]);
+    try {
+      const res = await fetch("/api/admin/coach-kb-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: await authHeader() },
+        body: JSON.stringify({ mode: "url", url: importUrl.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Import failed");
+      setImportResults(json.items || []);
+      setStatus(`Imported "${json.items?.[0]?.title}".`);
+      setImportUrl("");
+      await loadDocs();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setImportBusy(false);
+    }
+  }
+
+  async function importBulkUrls() {
+    const urls = importBulk
+      .split("\n")
+      .map((u) => u.trim())
+      .filter(Boolean);
+    if (urls.length === 0) return setError("Paste at least one URL.");
+    setImportBusy(true);
+    setError("");
+    setImportResults([]);
+    try {
+      const res = await fetch("/api/admin/coach-kb-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: await authHeader() },
+        body: JSON.stringify({ mode: "bulk", urls }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Bulk import failed");
+      setImportResults(json.items || []);
+      const ok = (json.items || []).filter((x) => x.ok).length;
+      setStatus(`Imported ${ok} of ${urls.length}.`);
+      setImportBulk("");
+      await loadDocs();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setImportBusy(false);
+    }
+  }
+
+  async function importPdf(file) {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) return setError("PDF too large (max 15MB).");
+    setImportBusy(true);
+    setError("");
+    setImportResults([]);
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(",")[1]);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      const res = await fetch("/api/admin/coach-kb-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: await authHeader() },
+        body: JSON.stringify({ mode: "pdf", filename: file.name, base64 }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "PDF import failed");
+      setImportResults(json.items || []);
+      setStatus(`Imported PDF "${json.items?.[0]?.title}".`);
+      await loadDocs();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setImportBusy(false);
+    }
+  }
+
   async function remove(doc) {
     if (!confirm(`Delete "${doc.title}"? This removes all its chunks too.`)) return;
     setStatus("Deleting...");
@@ -172,16 +260,148 @@ export default function CoachKbAdmin() {
             </p>
           </div>
           {!editing && (
-            <button
-              style={btn("primary")}
-              onClick={() =>
-                setEditing({ title: "", source: "", content: "", id: null })
-              }
-            >
-              + Add document
-            </button>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                style={btn("secondary")}
+                onClick={() => setImportMode(importMode === "url" ? null : "url")}
+              >
+                Import URL
+              </button>
+              <button
+                style={btn("secondary")}
+                onClick={() => setImportMode(importMode === "bulk" ? null : "bulk")}
+              >
+                Bulk URLs
+              </button>
+              <button
+                style={btn("secondary")}
+                onClick={() => setImportMode(importMode === "pdf" ? null : "pdf")}
+              >
+                Upload PDF
+              </button>
+              <button
+                style={btn("primary")}
+                onClick={() =>
+                  setEditing({ title: "", source: "", content: "", id: null })
+                }
+              >
+                + Add document
+              </button>
+            </div>
           )}
         </div>
+
+        {importMode && !editing && (
+          <div
+            style={{
+              background: "white",
+              border: `1px solid ${BORDER}`,
+              borderRadius: 12,
+              padding: 20,
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+              {importMode === "url" && "Import from a URL"}
+              {importMode === "bulk" && "Bulk import URLs"}
+              {importMode === "pdf" && "Upload a PDF"}
+            </div>
+
+            {importMode === "url" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input
+                  placeholder="https://awakeningdestiny.global/your-blog-post"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  style={inputStyle}
+                />
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)" }}>
+                  Works with public web pages and public Google Docs (shareable link).
+                </div>
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button style={btn("secondary")} onClick={() => setImportMode(null)}>
+                    Cancel
+                  </button>
+                  <button style={btn("primary")} onClick={runImportUrl} disabled={importBusy}>
+                    {importBusy ? "Fetching…" : "Fetch & ingest"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {importMode === "bulk" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <textarea
+                  placeholder={"One URL per line, e.g.\nhttps://awakeningdestiny.global/blog/post-1\nhttps://awakeningdestiny.global/blog/post-2"}
+                  value={importBulk}
+                  onChange={(e) => setImportBulk(e.target.value)}
+                  rows={8}
+                  style={{ ...inputStyle, fontFamily: "monospace", fontSize: 13, resize: "vertical" }}
+                />
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)" }}>
+                  Fetches each URL sequentially. Failed ones are reported below; successes are ingested immediately.
+                </div>
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button style={btn("secondary")} onClick={() => setImportMode(null)}>
+                    Cancel
+                  </button>
+                  <button style={btn("primary")} onClick={importBulkUrls} disabled={importBusy}>
+                    {importBusy ? "Importing…" : "Import all"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {importMode === "pdf" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => importPdf(e.target.files?.[0])}
+                  disabled={importBusy}
+                  style={{ fontSize: 13 }}
+                />
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)" }}>
+                  Max 15MB. PDF text is extracted, chunked, and embedded. Image-only PDFs
+                  won't yield text (no OCR yet).
+                </div>
+              </div>
+            )}
+
+            {importResults.length > 0 && (
+              <div
+                style={{
+                  marginTop: 14,
+                  borderTop: `1px solid ${BORDER}`,
+                  paddingTop: 12,
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 6, color: NAVY }}>Results</div>
+                {importResults.map((r, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      padding: "4px 0",
+                      color: r.ok === false ? "#991b1b" : NAVY,
+                    }}
+                  >
+                    {r.ok === false ? "❌" : "✓"} {r.title || r.url}
+                    {r.chunkCount !== undefined && (
+                      <span style={{ color: "rgba(2,26,53,0.55)" }}>
+                        {" "}
+                        — {r.chunkCount} chunks
+                      </span>
+                    )}
+                    {r.error && (
+                      <span style={{ color: "#991b1b" }}> — {r.error}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {error && (
           <div
