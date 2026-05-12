@@ -2,6 +2,7 @@
 // Locked to ADMIN_EMAIL via Supabase session.
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import AdminNav from "../../components/AdminNav";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 
@@ -231,11 +232,11 @@ export default function CoachKbAdmin() {
       style={{
         minHeight: "100vh",
         background: CREAM,
-        padding: "32px 24px",
         fontFamily: "'Outfit', sans-serif",
       }}
     >
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      <AdminNav />
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px" }}>
         <div
           style={{
             display: "flex",
@@ -256,17 +257,7 @@ export default function CoachKbAdmin() {
               Coach Knowledge Base
             </h1>
             <p style={{ color: "rgba(2,26,53,0.6)", fontSize: 13, margin: "4px 0 0" }}>
-              Add or edit documents Ezra draws from when answering visitors.{" "}
-              <a href="/admin/coach-health" style={{ color: NAVY, fontWeight: 600 }}>
-                Coach health →
-              </a>
-              {" · "}
-              <a
-                href="/admin/coach-conversations"
-                style={{ color: NAVY, fontWeight: 600 }}
-              >
-                Review conversations →
-              </a>
+              Add or edit documents Ezra draws from when answering visitors.
             </p>
           </div>
           {!editing && (

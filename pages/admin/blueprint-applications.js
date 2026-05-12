@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 import Head from 'next/head';
+import AdminNav from '../../components/AdminNav';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -45,6 +46,7 @@ async function fetchApps() {
     <>
       <Head><title>Blueprint Applications — ADG Admin</title></Head>
       <div style={{ minHeight: '100vh', background: '#F8F9FA', fontFamily: "'Outfit', sans-serif" }}>
+        <AdminNav />
         <div style={{ background: '#021A35', padding: '20px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ color: '#FDD20D', margin: 0, fontSize: 20, fontWeight: 600 }}>ADG Admin</h1>

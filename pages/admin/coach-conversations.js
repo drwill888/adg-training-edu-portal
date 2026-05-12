@@ -1,6 +1,7 @@
 // Admin: review coach conversations, promote useful Q/A pairs into the KB.
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import AdminNav from "../../components/AdminNav";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 
@@ -157,11 +158,11 @@ export default function CoachConversationsAdmin() {
       style={{
         minHeight: "100vh",
         background: CREAM,
-        padding: "32px 24px",
         fontFamily: "'Outfit', sans-serif",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <AdminNav />
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ marginBottom: 20 }}>
           <h1
             style={{
@@ -175,14 +176,7 @@ export default function CoachConversationsAdmin() {
           </h1>
           <p style={{ color: "rgba(2,26,53,0.6)", fontSize: 13, margin: "4px 0 0" }}>
             Review what visitors are asking. Promote a good answer into the knowledge
-            base so future visitors get it consistently.{" "}
-            <a href="/admin/coach-health" style={{ color: NAVY, fontWeight: 600 }}>
-              Coach health →
-            </a>
-            {" · "}
-            <a href="/admin/coach-kb" style={{ color: NAVY, fontWeight: 600 }}>
-              Manage knowledge base →
-            </a>
+            base so future visitors get it consistently.
           </p>
         </div>
 

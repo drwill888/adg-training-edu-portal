@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { colors as tok } from "../styles/tokens";
+import AdminNav from "../components/AdminNav";
 
 var NAVY = tok.navy;
 var GOLD = tok.gold;
@@ -187,6 +188,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", background: tok.cream, fontFamily: "'Outfit', sans-serif" }}>
+      <AdminNav />
 
       {/* Header */}
       <div style={{ background: NAVY, padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>

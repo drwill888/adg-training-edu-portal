@@ -1,6 +1,7 @@
 // Coach Health dashboard — spend, activity, top users.
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import AdminNav from "../../components/AdminNav";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 const NAVY = "#021A35";
@@ -89,11 +90,11 @@ export default function CoachHealthAdmin() {
       style={{
         minHeight: "100vh",
         background: CREAM,
-        padding: "32px 24px",
         fontFamily: "'Outfit', sans-serif",
       }}
     >
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <AdminNav />
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ marginBottom: 24 }}>
           <h1
             style={{
@@ -106,14 +107,7 @@ export default function CoachHealthAdmin() {
             Coach Health
           </h1>
           <p style={{ color: "rgba(2,26,53,0.6)", fontSize: 13, margin: "4px 0 0" }}>
-            Ezra's spend, activity, and top users.{" "}
-            <a href="/admin/coach-kb" style={{ color: NAVY, fontWeight: 600 }}>
-              Manage knowledge base →
-            </a>
-            {" · "}
-            <a href="/admin/coach-conversations" style={{ color: NAVY, fontWeight: 600 }}>
-              Review conversations →
-            </a>
+            Ezra's spend, activity, and top users.
           </p>
         </div>
 
