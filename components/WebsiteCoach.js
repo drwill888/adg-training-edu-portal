@@ -268,15 +268,8 @@ export default function WebsiteCoach() {
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>ADG Guide</div>
-                <div
-                  style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.2, cursor: "pointer" }}
-                  onClick={() => {
-                    try { localStorage.removeItem(SESSION_KEY); } catch {}
-                    window.location.reload();
-                  }}
-                  title="Click to reset session"
-                >
-                  [reset] msgs:{assistantCount} hasLead:{String(hasLead)} form:{String(showLeadForm)}
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.2 }}>
+                  Your guide to ADG
                 </div>
               </div>
             </div>
