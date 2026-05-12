@@ -89,8 +89,6 @@ function saveSession(updates) {
 export default function WebsiteCoach() {
   // When loaded inside an iframe (e.g. embedded on WordPress), skip drag/position/scroll logic
   const isEmbed = typeof window !== "undefined" && window.parent !== window;
-  // In embed mode the iframe is narrow but should never trigger mobile-fullscreen layout
-  const effectiveMobile = isMobile && !isEmbed;
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -111,6 +109,8 @@ export default function WebsiteCoach() {
   const [position, setPosition] = useState("bottom-right");
   const [minimized, setMinimized] = useState(false); // scroll-driven mini state
   const [isMobile, setIsMobile] = useState(false);
+  // In embed mode the iframe is narrow but should never trigger mobile-fullscreen layout
+  const effectiveMobile = isMobile && !isEmbed;
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
