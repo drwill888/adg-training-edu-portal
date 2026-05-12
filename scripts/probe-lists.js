@@ -22,13 +22,17 @@ if (!USER || !PASS) {
 }
 
 const auth = "Basic " + Buffer.from(`${USER}:${PASS}`).toString("base64");
+const endpoint = `${BASE}/wp-json/email-subscribers/v1/subscribers`;
 
-async function probe(label, url) {
+async function probe(label, url, opts = {}) {
   console.log(`\n→ ${label}`);
   try {
-    const res = await fetch(url, { headers: { Authorization: auth, Accept: "application/json" } });
+    const res = await fetch(url, {
+      ...opts,
+      headers: { Authorization: auth, Accept: "application/json", "Content-Type": "application/json", ...(opts.headers || {}) },
+    });
     const text = await res.text();
-    console.log(`  ${res.status}: ${text.slice(0, 1200)}`);
+    console.log(`  ${res.status}: ${text.slice(0, 2000)}`);
   } catch (e) {
     console.log(`  ERROR: ${e.message}`);
   }
@@ -36,12 +40,25 @@ async function probe(label, url) {
 
 async function main() {
   console.log(`User: ${USER}  Pass length: ${PASS.length}\n`);
-  await probe("icegram-express/v1 root",       `${BASE}/wp-json/icegram-express/v1`);
-  await probe("icegram-express/v1/lists",      `${BASE}/wp-json/icegram-express/v1/lists`);
-  await probe("icegram-express/v1/subscribers",`${BASE}/wp-json/icegram-express/v1/subscribers`);
-  await probe("email-subscribers/v1 root",     `${BASE}/wp-json/email-subscribers/v1`);
-  await probe("email-subscribers/v1/lists",    `${BASE}/wp-json/email-subscribers/v1/lists`);
-  await probe("email-subscribers/v1/forms",    `${BASE}/wp-json/email-subscribers/v1/forms`);
+
+  // GET subscribers — may reveal list IDs on existing records
+  await probe("GET subscribers (first page)", endpoint);
+
+  // OPTIONS — reveals accepted fields
+  await probe("OPTIONS subscribers", endpoint, { method: "OPTIONS" });
+
+  // POST without list — see if it works or what error we get
+  await probe("POST subscriber (no list)", endpoint, {
+    method: "POST",
+    body: JSON.stringify({
+      email: `probe+${Date.now()}@example.com`,
+      first_name: "Probe",
+      status: "subscribed",
+    }),
+  });
+
+  // Try WP admin AJAX to get lists (some ES versions expose this)
+  await probe("GET /wp-json (full namespace list)", `${BASE}/wp-json`);
 }
 
 main();
