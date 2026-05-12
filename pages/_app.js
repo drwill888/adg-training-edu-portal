@@ -11,6 +11,7 @@ const WebsiteCoach = dynamic(() => import('../components/WebsiteCoach'), { ssr: 
 
 const COACH_EXCLUDE_PREFIXES = [
   '/admin',
+  '/coach-embed',
   '/login',
   '/auth',
   '/checkout',
@@ -28,7 +29,7 @@ function shouldShowCoach(pathname) {
 }
 
 const publicPages = [
-  '/login', '/auth/callback', '/auth/reset-password', '/', '/assessment',
+  '/login', '/auth/callback', '/auth/reset-password', '/', '/assessment', '/coach-embed',
   '/called-to-carry',
   '/called-to-carry/assessment',
   '/called-to-carry/assessment/start',

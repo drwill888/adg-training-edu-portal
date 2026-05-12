@@ -207,6 +207,13 @@ export default function WebsiteCoach() {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
   }, [isOpen]);
 
+  // When embedded as an iframe, tell the parent page to resize around the widget
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.parent !== window) {
+      window.parent.postMessage({ type: "EZRA_RESIZE", isOpen }, "*");
+    }
+  }, [isOpen]);
+
   // Show soft lead form after SOFT_LEAD_AFTER assistant replies (if not already captured)
   useEffect(() => {
     if (!hasLead && assistantCount >= SOFT_LEAD_AFTER && !showLeadForm) {
@@ -323,6 +330,9 @@ export default function WebsiteCoach() {
       {!isOpen && (
         <button
           onClick={() => {
+            if (typeof window !== "undefined" && window.parent !== window) {
+              window.parent.postMessage({ type: "EZRA_RESIZE", isOpen: true }, "*");
+            }
             setIsOpen(true);
             setMinimized(false);
           }}
@@ -456,7 +466,12 @@ export default function WebsiteCoach() {
                 </button>
               )}
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.parent !== window) {
+                    window.parent.postMessage({ type: "EZRA_RESIZE", isOpen: false }, "*");
+                  }
+                  setIsOpen(false);
+                }}
                 style={{
                   background: "transparent",
                   border: "none",
