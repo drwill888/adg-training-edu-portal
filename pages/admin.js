@@ -51,6 +51,7 @@ export default function AdminDashboard() {
   var tabState = useState("overview"); var tab = tabState[0]; var setTab = tabState[1];
   var sendEmailState = useState({ email: "", name: "", status: "" }); var sendEmail = sendEmailState[0]; var setSendEmail = sendEmailState[1];
   var resendingState = useState(null); var resending = resendingState[0]; var setResending = resendingState[1];
+  var resendPaymentState = useState(null); var resendingPayment = resendPaymentState[0]; var setResendingPayment = resendPaymentState[1];
 
   useEffect(function() {
     async function checkAuth() {
@@ -169,6 +170,26 @@ export default function AdminDashboard() {
       return { ok: false, error: e.message };
     } finally {
       setResending(null);
+    }
+  }
+
+  async function resendPaymentLink(applicationId) {
+    setResendingPayment(applicationId);
+    try {
+      var { data: s } = await supabase.auth.getSession();
+      var token = s.session ? s.session.access_token : "";
+      var res = await fetch("/api/admin/resend-payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ applicationId }),
+      });
+      var json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed");
+      alert("Fresh payment link sent to " + json.email);
+    } catch (e) {
+      alert("Error: " + e.message);
+    } finally {
+      setResendingPayment(null);
     }
   }
 
@@ -394,7 +415,6 @@ export default function AdminDashboard() {
               <button onClick={exportSubmissionsCSV} style={{ padding: "8px 16px", background: NAVY, color: GOLD_BRIGHT, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>↓ Export CSV</button>
             </div>
 
-            {/* Summary strip */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
               {[
                 { label: "Total Submissions", value: submissions.length, color: "#0172BC" },
@@ -420,36 +440,19 @@ export default function AdminDashboard() {
                 var isPaid = !!payment;
                 var tier = payment ? inferTier(payment) : null;
                 var borderColor = isPaid ? "#16a34a" : application ? GOLD : "#e5e7eb";
-
-                // Single archetype display — no duplicates
-                var archetypeLabel = s.custom_label
-                  ? s.custom_label
-                  : s.archetype_id
-                    ? formatArchetype(s.archetype_id)
-                    : (s.office && s.overlay)
-                      ? formatArchetype(s.office) + " " + formatArchetype(s.overlay)
-                      : "—";
-
+                var archetypeLabel = s.custom_label ? s.custom_label : s.archetype_id ? formatArchetype(s.archetype_id) : (s.office && s.overlay) ? formatArchetype(s.office) + " " + formatArchetype(s.overlay) : "—";
                 return (
                   <div key={s.id} style={{ background: "#fff", borderRadius: 12, padding: "18px 24px", border: "1px solid #e5e7eb", borderLeft: "4px solid " + borderColor }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
-
-                      {/* Identity */}
                       <div style={{ flex: 1, minWidth: 180 }}>
                         <div style={{ fontSize: 15, fontWeight: 700, color: NAVY }}>{s.first_name}</div>
                         <div style={{ fontSize: 13, color: "#555" }}>{s.email}</div>
-                        <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
-                          {new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </div>
+                        <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>{new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
                       </div>
-
-                      {/* Archetype — single clean display */}
                       <div style={{ flex: 1, minWidth: 160 }}>
                         <div style={{ fontSize: 10, color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 4 }}>Archetype</div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{archetypeLabel}</div>
                       </div>
-
-                      {/* Status badges */}
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                         <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 12, background: isPaid ? "#dcfce7" : "#f3f4f6", color: isPaid ? "#16a34a" : "#888", border: "1px solid " + (isPaid ? "#bbf7d0" : "#e5e7eb") }}>
                           {isPaid ? "✓ Paid — " + (TIER_LABELS[tier] || tier) : "Free"}
@@ -459,13 +462,9 @@ export default function AdminDashboard() {
                             {application.status === "approved" ? "✓ Approved" : application.status === "paid" ? "✓ Enrolled" : "⏳ Pending"} — {application.tier === "sprint" ? "Sprint" : "Founders"}
                           </span>
                         )}
-                        <a href={"/called-to-carry/assessment/results/" + s.id} target="_blank" rel="noreferrer"
-  style={{ fontSize: 11, color: GOLD, fontWeight: 600, textDecoration: "none" }}>
-  → View Archetype Report
-</a>
-<span style={{ fontSize: 11, color: "#0172BC", fontWeight: 600 }}>✉ Archetype email sent</span>
+                        <a href={"/called-to-carry/assessment/results/" + s.id} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: GOLD, fontWeight: 600, textDecoration: "none" }}>→ View Archetype Report</a>
+                        <span style={{ fontSize: 11, color: "#0172BC", fontWeight: 600 }}>✉ Archetype email sent</span>
                       </div>
-
                     </div>
                   </div>
                 );
@@ -567,7 +566,20 @@ export default function AdminDashboard() {
                     )}
                     {a.business_or_ministry && <div style={{ marginTop: 8, fontSize: 12, color: "#555" }}><span style={{ fontWeight: 600 }}>Building: </span>{a.business_or_ministry}</div>}
                     {a.archetype && <div style={{ marginTop: 4, fontSize: 12, color: "#555" }}><span style={{ fontWeight: 600 }}>Archetype: </span>{formatArchetype(a.archetype)}</div>}
-                    {a.approved_at && <div style={{ marginTop: 8, fontSize: 11, color: "#16a34a" }}>Approved {new Date(a.approved_at).toLocaleDateString()}</div>}
+                    {a.approved_at && (
+                      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 11, color: "#16a34a" }}>Approved {new Date(a.approved_at).toLocaleDateString()}</span>
+                        {a.status === "approved" && (
+                          <button
+                            onClick={function() { resendPaymentLink(a.id); }}
+                            disabled={resendingPayment === a.id}
+                            style={{ padding: "5px 14px", background: "transparent", border: "1px solid #C8A951", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#92400e", whiteSpace: "nowrap" }}
+                          >
+                            {resendingPayment === a.id ? "Sending…" : "Resend Payment Link"}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -576,72 +588,60 @@ export default function AdminDashboard() {
         )}
 
         {/* Progress */}
-{tab === "progress" && (
-  <div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY }}>Detailed Progress</h2>
-      <button onClick={exportCSV} style={{ padding: "8px 16px", background: NAVY, color: GOLD_BRIGHT, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>↓ Export CSV</button>
-    </div>
-    {uniqueUserIds.length === 0 && <p style={{ color: "#888", fontSize: 14, padding: 24, textAlign: "center" }}>No progress data yet.</p>}
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {uniqueUserIds.map(function(userId) {
-        var userEmail = emailFor(userId);
-        var userMods = getUserProgress(userId);
-        var userPayment = payments.find(function(p) { return emailMatch(p.email, userEmail) && p.status === "completed"; });
-        var isPaid = !!userPayment;
-        var tier = userPayment ? inferTier(userPayment) : null;
-        var lastUpdated = progress
-          .filter(function(p) { return p.user_id === userId; })
-          .map(function(p) { return p.updated_at; })
-          .sort()
-          .reverse()[0];
-        return (
-          <div key={userId} style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid #e5e7eb" }}>
-            {/* Header row */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{userEmail}</div>
-                <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
-                  Last active: {lastUpdated ? new Date(lastUpdated).toLocaleString() : "—"}
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 12, background: isPaid ? "#dcfce7" : "#f3f4f6", color: isPaid ? "#16a34a" : "#888", border: "1px solid " + (isPaid ? "#bbf7d0" : "#e5e7eb") }}>
-                  {isPaid ? "Paid — " + (TIER_LABELS[tier] || tier) : "Free tier"}
-                </span>
-              </div>
+        {tab === "progress" && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY }}>Detailed Progress</h2>
+              <button onClick={exportCSV} style={{ padding: "8px 16px", background: NAVY, color: GOLD_BRIGHT, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>↓ Export CSV</button>
             </div>
-            {/* Module progress row */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {MODULE_NAMES.map(function(name, idx) {
-                var mod = userMods[idx];
-                var stepNum = mod ? mod.step : -1;
-                var completed = stepNum >= (TOTAL_STEPS[idx] || 10);
-                var inProgress = stepNum > 0 && !completed;
-                var hasBlueprint = mod && mod.hasSummary;
-                var hasCommit = mod && mod.hasCommitments;
-                var bg = completed ? "#dcfce7" : inProgress ? "#FFF9E6" : "#f3f4f6";
-                var color = completed ? "#16a34a" : inProgress ? "#92400e" : "#9ca3af";
-                var border = completed ? "#bbf7d0" : inProgress ? "#fde68a" : "#e5e7eb";
+            {uniqueUserIds.length === 0 && <p style={{ color: "#888", fontSize: 14, padding: 24, textAlign: "center" }}>No progress data yet.</p>}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {uniqueUserIds.map(function(userId) {
+                var userEmail = emailFor(userId);
+                var userMods = getUserProgress(userId);
+                var userPayment = payments.find(function(p) { return emailMatch(p.email, userEmail) && p.status === "completed"; });
+                var isPaid = !!userPayment;
+                var tier = userPayment ? inferTier(userPayment) : null;
+                var lastUpdated = progress.filter(function(p) { return p.user_id === userId; }).map(function(p) { return p.updated_at; }).sort().reverse()[0];
                 return (
-                  <div key={idx} style={{ padding: "6px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: bg, color: color, border: "1px solid " + border, display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
-                    <span>{name}{completed ? " ✓" : ""}</span>
-                    {inProgress && <span style={{ fontSize: 10, fontWeight: 400, marginTop: 2 }}>{getStepLabel(stepNum)}</span>}
-                    {(hasBlueprint || hasCommit) && (
-                      <span style={{ fontSize: 9, marginTop: 2, color: "#0172BC" }}>
-                        {hasBlueprint ? "📄" : ""}{hasCommit ? "✏️" : ""}
-                      </span>
-                    )}
+                  <div key={userId} style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid #e5e7eb" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>{userEmail}</div>
+                        <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>Last active: {lastUpdated ? new Date(lastUpdated).toLocaleString() : "—"}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 12, background: isPaid ? "#dcfce7" : "#f3f4f6", color: isPaid ? "#16a34a" : "#888", border: "1px solid " + (isPaid ? "#bbf7d0" : "#e5e7eb") }}>
+                          {isPaid ? "Paid — " + (TIER_LABELS[tier] || tier) : "Free tier"}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {MODULE_NAMES.map(function(name, idx) {
+                        var mod = userMods[idx];
+                        var stepNum = mod ? mod.step : -1;
+                        var completed = stepNum >= (TOTAL_STEPS[idx] || 10);
+                        var inProgress = stepNum > 0 && !completed;
+                        var hasBlueprint = mod && mod.hasSummary;
+                        var hasCommit = mod && mod.hasCommitments;
+                        var bg = completed ? "#dcfce7" : inProgress ? "#FFF9E6" : "#f3f4f6";
+                        var color = completed ? "#16a34a" : inProgress ? "#92400e" : "#9ca3af";
+                        var border = completed ? "#bbf7d0" : inProgress ? "#fde68a" : "#e5e7eb";
+                        return (
+                          <div key={idx} style={{ padding: "6px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: bg, color: color, border: "1px solid " + border, display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
+                            <span>{name}{completed ? " ✓" : ""}</span>
+                            {inProgress && <span style={{ fontSize: 10, fontWeight: 400, marginTop: 2 }}>{getStepLabel(stepNum)}</span>}
+                            {(hasBlueprint || hasCommit) && <span style={{ fontSize: 9, marginTop: 2, color: "#0172BC" }}>{hasBlueprint ? "📄" : ""}{hasCommit ? "✏️" : ""}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+        )}
 
         {/* Analytics */}
         {tab === "analytics" && (
