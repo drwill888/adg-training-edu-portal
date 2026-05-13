@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminNav from "../../components/AdminNav";
+import { useIsMobile } from "../../lib/useBreakpoint";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 const NAVY = "#021A35";
@@ -39,6 +40,7 @@ function Stat({ label, value, sub }) {
 }
 
 export default function CoachHealthAdmin() {
+  const isMobile = useIsMobile();
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [data, setData] = useState(null);
@@ -94,7 +96,7 @@ export default function CoachHealthAdmin() {
       }}
     >
       <AdminNav />
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "20px 14px" : "32px 24px" }}>
         <div style={{ marginBottom: 24 }}>
           <h1
             style={{
@@ -157,7 +159,7 @@ export default function CoachHealthAdmin() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 gap: 16,
                 marginBottom: 24,
               }}
@@ -227,26 +229,50 @@ export default function CoachHealthAdmin() {
               {(data.recent || []).length === 0 && (
                 <div style={{ color: "rgba(2,26,53,0.55)", fontSize: 13 }}>No usage yet.</div>
               )}
-              {(data.recent || []).map((r) => (
-                <div
-                  key={r.id}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "160px 1fr 100px 80px 80px",
-                    gap: 8,
-                    fontSize: 12,
-                    padding: "6px 0",
-                    borderBottom: `1px solid ${BORDER}`,
-                    color: NAVY,
-                  }}
-                >
-                  <span>{new Date(r.created_at).toLocaleString()}</span>
-                  <span style={{ color: "rgba(2,26,53,0.7)" }}>{r.email || (r.ip_hash ? `ip:${r.ip_hash.slice(0, 10)}…` : "—")}</span>
-                  <span>{r.model || "—"}</span>
-                  <span>{(r.prompt_tokens || 0) + (r.completion_tokens || 0)} tok</span>
-                  <span>${Number(r.cost_usd || 0).toFixed(5)}</span>
-                </div>
-              ))}
+              {isMobile
+                ? (data.recent || []).map((r) => (
+                    <div
+                      key={r.id}
+                      style={{
+                        fontSize: 12,
+                        padding: "10px 0",
+                        borderBottom: `1px solid ${BORDER}`,
+                        color: NAVY,
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>
+                        {r.email || (r.ip_hash ? `ip:${r.ip_hash.slice(0, 10)}…` : "—")}
+                      </div>
+                      <div style={{ color: "rgba(2,26,53,0.6)", marginTop: 2 }}>
+                        {new Date(r.created_at).toLocaleString()}
+                      </div>
+                      <div style={{ marginTop: 4, display: "flex", gap: 10, flexWrap: "wrap", color: "rgba(2,26,53,0.75)" }}>
+                        <span>{r.model || "—"}</span>
+                        <span>{(r.prompt_tokens || 0) + (r.completion_tokens || 0)} tok</span>
+                        <span>${Number(r.cost_usd || 0).toFixed(5)}</span>
+                      </div>
+                    </div>
+                  ))
+                : (data.recent || []).map((r) => (
+                    <div
+                      key={r.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "160px 1fr 100px 80px 80px",
+                        gap: 8,
+                        fontSize: 12,
+                        padding: "6px 0",
+                        borderBottom: `1px solid ${BORDER}`,
+                        color: NAVY,
+                      }}
+                    >
+                      <span>{new Date(r.created_at).toLocaleString()}</span>
+                      <span style={{ color: "rgba(2,26,53,0.7)" }}>{r.email || (r.ip_hash ? `ip:${r.ip_hash.slice(0, 10)}…` : "—")}</span>
+                      <span>{r.model || "—"}</span>
+                      <span>{(r.prompt_tokens || 0) + (r.completion_tokens || 0)} tok</span>
+                      <span>${Number(r.cost_usd || 0).toFixed(5)}</span>
+                    </div>
+                  ))}
             </div>
 
             <div
@@ -259,7 +285,7 @@ export default function CoachHealthAdmin() {
               }}
             >
               <div style={{ fontWeight: 700, color: NAVY, marginBottom: 8 }}>Current settings</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, color: "rgba(2,26,53,0.75)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "auto 1fr" : "1fr 1fr", gap: isMobile ? "6px 12px" : 8, color: "rgba(2,26,53,0.75)" }}>
                 <div>Model</div><div>{c.model}</div>
                 <div>Wallet cap</div><div>${c.walletUsdPerMonth}/month</div>
                 <div>Per-IP daily cap</div><div>{c.perIpPerDay} messages</div>

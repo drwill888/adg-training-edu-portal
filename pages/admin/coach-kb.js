@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminNav from "../../components/AdminNav";
+import { useIsMobile } from "../../lib/useBreakpoint";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 
@@ -34,6 +35,7 @@ const btn = (variant = "primary") => ({
 });
 
 export default function CoachKbAdmin() {
+  const isMobile = useIsMobile();
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [documents, setDocuments] = useState([]);
@@ -236,12 +238,14 @@ export default function CoachKbAdmin() {
       }}
     >
       <AdminNav />
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: isMobile ? "20px 14px" : "32px 24px" }}>
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: isMobile ? "stretch" : "center",
+            flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
+            gap: isMobile ? 16 : 12,
             marginBottom: 24,
           }}
         >
@@ -486,24 +490,26 @@ export default function CoachKbAdmin() {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 140px 100px 180px",
-              padding: "12px 16px",
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-              color: "rgba(2,26,53,0.5)",
-              borderBottom: `1px solid ${BORDER}`,
-            }}
-          >
-            <div>Title / Source</div>
-            <div>Updated</div>
-            <div>Chunks</div>
-            <div style={{ textAlign: "right" }}>Actions</div>
-          </div>
+          {!isMobile && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 140px 100px 180px",
+                padding: "12px 16px",
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+                color: "rgba(2,26,53,0.5)",
+                borderBottom: `1px solid ${BORDER}`,
+              }}
+            >
+              <div>Title / Source</div>
+              <div>Updated</div>
+              <div>Chunks</div>
+              <div style={{ textAlign: "right" }}>Actions</div>
+            </div>
+          )}
           {loading && (
             <div style={{ padding: 20, color: "rgba(2,26,53,0.6)", fontSize: 14 }}>
               Loading…
@@ -514,51 +520,91 @@ export default function CoachKbAdmin() {
               No documents yet. Click "Add document" to start.
             </div>
           )}
-          {documents.map((d) => (
-            <div
-              key={d.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 140px 100px 180px",
-                padding: "14px 16px",
-                fontSize: 14,
-                color: NAVY,
-                borderBottom: `1px solid ${BORDER}`,
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 600 }}>{d.title}</div>
+          {documents.map((d) =>
+            isMobile ? (
+              <div
+                key={d.id}
+                style={{
+                  padding: "14px 14px",
+                  fontSize: 14,
+                  color: NAVY,
+                  borderBottom: `1px solid ${BORDER}`,
+                }}
+              >
+                <div style={{ fontWeight: 600, wordBreak: "break-word" }}>{d.title}</div>
                 {d.source && (
-                  <div style={{ fontSize: 12, color: "rgba(2,26,53,0.55)" }}>
+                  <div style={{ fontSize: 12, color: "rgba(2,26,53,0.55)", marginTop: 2 }}>
                     {d.source}
                   </div>
                 )}
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)", marginTop: 6 }}>
+                  {new Date(d.created_at).toLocaleDateString()} · {d.chunk_count} chunks
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                  <button
+                    style={btn("secondary")}
+                    onClick={() =>
+                      setEditing({
+                        id: d.id,
+                        title: d.title,
+                        source: d.source || "",
+                        content: d.content,
+                      })
+                    }
+                  >
+                    Edit
+                  </button>
+                  <button style={btn("danger")} onClick={() => remove(d)}>
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)" }}>
-                {new Date(d.created_at).toLocaleDateString()}
+            ) : (
+              <div
+                key={d.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 140px 100px 180px",
+                  padding: "14px 16px",
+                  fontSize: 14,
+                  color: NAVY,
+                  borderBottom: `1px solid ${BORDER}`,
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 600 }}>{d.title}</div>
+                  {d.source && (
+                    <div style={{ fontSize: 12, color: "rgba(2,26,53,0.55)" }}>
+                      {d.source}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)" }}>
+                  {new Date(d.created_at).toLocaleDateString()}
+                </div>
+                <div style={{ fontSize: 13 }}>{d.chunk_count}</div>
+                <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                  <button
+                    style={btn("secondary")}
+                    onClick={() =>
+                      setEditing({
+                        id: d.id,
+                        title: d.title,
+                        source: d.source || "",
+                        content: d.content,
+                      })
+                    }
+                  >
+                    Edit
+                  </button>
+                  <button style={btn("danger")} onClick={() => remove(d)}>
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div style={{ fontSize: 13 }}>{d.chunk_count}</div>
-              <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                <button
-                  style={btn("secondary")}
-                  onClick={() =>
-                    setEditing({
-                      id: d.id,
-                      title: d.title,
-                      source: d.source || "",
-                      content: d.content,
-                    })
-                  }
-                >
-                  Edit
-                </button>
-                <button style={btn("danger")} onClick={() => remove(d)}>
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
     </main>

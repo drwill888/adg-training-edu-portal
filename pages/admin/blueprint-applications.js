@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 import Head from 'next/head';
 import AdminNav from '../../components/AdminNav';
+import { useIsMobile } from '../../lib/useBreakpoint';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,6 +12,7 @@ const supabase = createClient(
 
 export default function BlueprintApplications() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
@@ -47,9 +49,9 @@ async function fetchApps() {
       <Head><title>Blueprint Applications — ADG Admin</title></Head>
       <div style={{ minHeight: '100vh', background: '#F8F9FA', fontFamily: "'Outfit', sans-serif" }}>
         <AdminNav />
-        <div style={{ background: '#021A35', padding: '20px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ color: '#FDD20D', margin: 0, fontSize: 20, fontWeight: 600 }}>ADG Admin</h1>
+        <div style={{ background: '#021A35', padding: isMobile ? '14px 16px' : '20px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ color: '#FDD20D', margin: 0, fontSize: isMobile ? 18 : 20, fontWeight: 600 }}>ADG Admin</h1>
             <p style={{ color: '#94a3b8', margin: '4px 0 0', fontSize: 13 }}>Blueprint Applications</p>
           </div>
           <button onClick={() => router.push('/dashboard')}
@@ -58,8 +60,8 @@ async function fetchApps() {
           </button>
         </div>
 
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '20px 14px' : '32px 24px' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
             {['pending', 'approved', 'rejected', 'all'].map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 style={{ padding: '8px 20px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500,
@@ -78,18 +80,18 @@ async function fetchApps() {
               {apps.map(app => {
                 const sc = STATUS[app.status] || STATUS.pending;
                 return (
-                  <div key={app.id} style={{ background: 'white', borderRadius: 12, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #E2E8F0' }}>
+                  <div key={app.id} style={{ background: 'white', borderRadius: 12, padding: isMobile ? 16 : 24, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #E2E8F0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: '#021A35' }}>{app.first_name} {app.last_name}</h3>
+                      <div style={{ minWidth: 0, flex: '1 1 200px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                          <h3 style={{ margin: 0, fontSize: isMobile ? 16 : 18, fontWeight: 600, color: '#021A35' }}>{app.first_name} {app.last_name}</h3>
                           <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12, background: sc.bg, color: sc.text, textTransform: 'uppercase' }}>
                             {app.status}
                           </span>
                           {app.paid_at && <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>Paid ✓</span>}
                         </div>
-                        <a href={`mailto:${app.email}`} style={{ color: '#0172BC', fontSize: 14, textDecoration: 'none' }}>{app.email}</a>
-                        {app.phone && <span style={{ color: '#64748b', fontSize: 14, marginLeft: 16 }}>{app.phone}</span>}
+                        <a href={`mailto:${app.email}`} style={{ color: '#0172BC', fontSize: 14, textDecoration: 'none', wordBreak: 'break-all' }}>{app.email}</a>
+                        {app.phone && <span style={{ color: '#64748b', fontSize: 14, marginLeft: isMobile ? 0 : 16, display: isMobile ? 'block' : 'inline' }}>{app.phone}</span>}
                       </div>
                       <div style={{ fontSize: 12, color: '#94a3b8' }}>
                         {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

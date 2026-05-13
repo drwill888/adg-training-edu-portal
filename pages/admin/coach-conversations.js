@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminNav from "../../components/AdminNav";
+import { useIsMobile } from "../../lib/useBreakpoint";
 
 const ADMIN_EMAIL = "meier.will@gmail.com";
 
@@ -33,6 +34,7 @@ const inputStyle = {
 };
 
 export default function CoachConversationsAdmin() {
+  const isMobile = useIsMobile();
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [conversations, setConversations] = useState([]);
@@ -162,7 +164,7 @@ export default function CoachConversationsAdmin() {
       }}
     >
       <AdminNav />
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "20px 14px" : "32px 24px" }}>
         <div style={{ marginBottom: 20 }}>
           <h1
             style={{
@@ -212,7 +214,7 @@ export default function CoachConversationsAdmin() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(280px, 360px) 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "minmax(280px, 360px) 1fr",
             gap: 20,
           }}
         >
@@ -222,8 +224,9 @@ export default function CoachConversationsAdmin() {
               background: "white",
               border: `1px solid ${BORDER}`,
               borderRadius: 12,
-              maxHeight: "75vh",
+              maxHeight: isMobile ? "60vh" : "75vh",
               overflowY: "auto",
+              display: isMobile && selectedId ? "none" : "block",
             }}
           >
             <div
@@ -250,10 +253,10 @@ export default function CoachConversationsAdmin() {
                   background: selectedId === c.id ? "rgba(2,26,53,0.04)" : "transparent",
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 600, color: NAVY }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: NAVY, wordBreak: "break-word" }}>
                   {c.lead ? `${c.lead.first_name || ""} ${c.lead.last_name || ""}`.trim() || c.lead.email : "Anonymous visitor"}
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)", marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)", marginTop: 2, wordBreak: "break-all" }}>
                   {c.lead?.email || c.session_id.slice(0, 12) + "…"}
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(2,26,53,0.5)", marginTop: 4 }}>
@@ -274,11 +277,23 @@ export default function CoachConversationsAdmin() {
               background: "white",
               border: `1px solid ${BORDER}`,
               borderRadius: 12,
-              padding: 20,
-              maxHeight: "75vh",
-              overflowY: "auto",
+              padding: isMobile ? 14 : 20,
+              maxHeight: isMobile ? "none" : "75vh",
+              overflowY: isMobile ? "visible" : "auto",
+              display: isMobile && !selectedId ? "none" : "block",
             }}
           >
+            {isMobile && selectedId && (
+              <button
+                style={{ ...btn("secondary"), marginBottom: 12 }}
+                onClick={() => {
+                  setSelectedId(null);
+                  setThread(null);
+                }}
+              >
+                ← Back to conversations
+              </button>
+            )}
             {!thread && !selectedId && (
               <div style={{ color: "rgba(2,26,53,0.6)", fontSize: 14 }}>
                 Select a conversation on the left to review it.
@@ -356,7 +371,7 @@ export default function CoachConversationsAdmin() {
                         </button>
                       )}
                     </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.55, whiteSpace: "pre-wrap", color: NAVY }}>
+                    <div style={{ fontSize: 14, lineHeight: 1.55, whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: NAVY }}>
                       {m.content}
                     </div>
                   </div>
