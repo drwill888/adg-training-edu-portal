@@ -49,6 +49,8 @@ export default function AdminDashboard() {
   var applicationsState = useState([]); var applications = applicationsState[0]; var setApplications = applicationsState[1];
   var submissionsState = useState([]); var submissions = submissionsState[0]; var setSubmissions = submissionsState[1];
   var tabState = useState("overview"); var tab = tabState[0]; var setTab = tabState[1];
+  var sendEmailState = useState({ email: "", name: "", status: "" }); var sendEmail = sendEmailState[0]; var setSendEmail = sendEmailState[1];
+  var resendingState = useState(null); var resending = resendingState[0]; var setResending = resendingState[1];
 
   useEffect(function() {
     async function checkAuth() {
@@ -151,6 +153,39 @@ export default function AdminDashboard() {
     a.href = url; a.download = "5c-blueprint-progress-" + new Date().toISOString().split("T")[0] + ".csv"; a.click(); URL.revokeObjectURL(url);
   }
 
+  async function sendLoginEmail(email, name) {
+    if (!email || !name) return;
+    setResending(email);
+    try {
+      var res = await fetch("/api/send-magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), name: name.trim() }),
+      });
+      var json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to send");
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setResending(null);
+    }
+  }
+
+  async function handleSendEmail() {
+    if (!sendEmail.email || !sendEmail.name) {
+      setSendEmail(function(s) { return { ...s, status: "error:Email and name are required." }; });
+      return;
+    }
+    setSendEmail(function(s) { return { ...s, status: "sending" }; });
+    var result = await sendLoginEmail(sendEmail.email, sendEmail.name);
+    if (result.ok) {
+      setSendEmail({ email: "", name: "", status: "sent" });
+    } else {
+      setSendEmail(function(s) { return { ...s, status: "error:" + result.error }; });
+    }
+  }
+
   function exportPaymentsCSV() {
     var rows = [["Email", "Tier", "Amount", "Status", "Stripe Session", "Date"]];
     payments.forEach(function(p) {
@@ -245,6 +280,36 @@ export default function AdminDashboard() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Send Login Email */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "8px 24px 0" }}>
+        <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "16px 20px", marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 10 }}>Send Login Email</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <input
+              placeholder="First name"
+              value={sendEmail.name}
+              onChange={function(e) { setSendEmail(function(s) { return { ...s, name: e.target.value, status: "" }; }); }}
+              style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, width: 160, outline: "none" }}
+            />
+            <input
+              placeholder="Email address"
+              value={sendEmail.email}
+              onChange={function(e) { setSendEmail(function(s) { return { ...s, email: e.target.value, status: "" }; }); }}
+              style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, width: 240, outline: "none" }}
+            />
+            <button
+              onClick={handleSendEmail}
+              disabled={sendEmail.status === "sending"}
+              style={{ padding: "8px 18px", background: NAVY, color: GOLD_BRIGHT, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sendEmail.status === "sending" ? 0.6 : 1 }}
+            >
+              {sendEmail.status === "sending" ? "Sending…" : "Send"}
+            </button>
+            {sendEmail.status === "sent" && <span style={{ fontSize: 13, color: "#16a34a", fontWeight: 600 }}>✓ Sent!</span>}
+            {sendEmail.status.startsWith("error:") && <span style={{ fontSize: 13, color: "#dc2626" }}>{sendEmail.status.slice(6)}</span>}
+          </div>
         </div>
       </div>
 
@@ -421,7 +486,7 @@ export default function AdminDashboard() {
               <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: 12, overflow: "hidden" }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
-                    {["Email", "Tier", "Amount", "Status", "Date"].map(function(h) {
+                    {["Email", "Tier", "Amount", "Status", "Date", ""].map(function(h) {
                       return <th key={h} style={{ padding: "12px 16px", fontSize: 12, fontWeight: 700, color: "#555", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>{h}</th>;
                     })}
                   </tr>
@@ -429,6 +494,7 @@ export default function AdminDashboard() {
                 <tbody>
                   {payments.map(function(p, i) {
                     var tier = inferTier(p);
+                    var nameGuess = (p.email || "").split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, function(c) { return c.toUpperCase(); });
                     return (
                       <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                         <td style={{ padding: "12px 16px", fontSize: 13, color: NAVY }}>{p.email}</td>
@@ -442,6 +508,18 @@ export default function AdminDashboard() {
                           <span style={{ padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600, background: p.status === "completed" ? "#dcfce7" : "#fef9c3", color: p.status === "completed" ? "#16a34a" : "#92400e" }}>{p.status}</span>
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 12, color: "#888" }}>{p.created_at ? new Date(p.created_at).toLocaleDateString() : ""}</td>
+                        <td style={{ padding: "8px 16px" }}>
+                          <button
+                            onClick={async function() {
+                              var result = await sendLoginEmail(p.email, nameGuess);
+                              alert(result.ok ? "Login email sent to " + p.email : "Error: " + result.error);
+                            }}
+                            disabled={resending === p.email}
+                            style={{ padding: "5px 12px", background: "transparent", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", color: NAVY, whiteSpace: "nowrap" }}
+                          >
+                            {resending === p.email ? "Sending…" : "Resend Login"}
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
