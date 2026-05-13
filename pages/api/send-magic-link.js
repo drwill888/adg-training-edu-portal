@@ -10,6 +10,7 @@ export default async function handler(req, res) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const resendApiKey = process.env.RESEND_API_KEY
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://5cblueprint.awakeningdestiny.global'
 
   if (!supabaseUrl || !serviceRoleKey) {
     return res.status(500).json({ error: 'Supabase service role key missing' })
@@ -27,7 +28,7 @@ export default async function handler(req, res) {
     type: 'magiclink',
     email,
     options: {
-      redirectTo: 'https://adg-training-portal.vercel.app/auth/callback',
+      redirectTo: `${siteUrl}/auth/callback`,
       data: { full_name: name },
     },
   })
