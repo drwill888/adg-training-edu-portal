@@ -34,7 +34,6 @@ const publicPages = [
   '/login', '/auth/callback', '/auth/reset-password', '/', '/assessment', '/coach-embed',
   '/called-to-carry',
   '/called-to-carry/assessment',
-  '/called-to-carry/assessment/start',
   '/called-to-carry/founders',
   '/called-to-carry/founders/apply',
   '/called-to-carry/founders/thank-you',
