@@ -20,7 +20,20 @@ const FREE_QUESTION_LIMIT = parseInt(process.env.COACH_FREE_QUESTION_LIMIT || "3
 const GATE_MESSAGE =
   "I'd love to keep going. Share your name and email so I can give you more personal guidance — and so the conversation lives somewhere you can return to.";
 
+const ALLOWED_ORIGINS = [
+  "https://awakeningdestiny.global",
+  "https://www.awakeningdestiny.global",
+];
+
 export default async function handler(req, res) {
+  const origin = req.headers.origin || "";
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Vary", "Origin");
+  }
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { sessionId, question, hasLead, email } = req.body;
