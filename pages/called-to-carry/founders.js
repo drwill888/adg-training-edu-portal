@@ -1,5 +1,5 @@
 // pages/called-to-carry/founders.js
-// Founders Cohort marketing landing page — $497, 8 weeks, application-required.
+// Founders Cohort marketing landing page — $997, 8 weeks, application-required.
 // Migrated from pages/cohort/index.js with corrected paths.
 
 import Head from 'next/head';

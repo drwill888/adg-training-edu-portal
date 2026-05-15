@@ -1,5 +1,5 @@
 // pages/called-to-carry/sprint.js
-// 21-Day Sprint marketing landing page — $997, application-only, direct with Will.
+// 21-Day Sprint marketing landing page — $497, application-only, direct with Will.
 
 import Head from 'next/head';
 import Link from 'next/link';
