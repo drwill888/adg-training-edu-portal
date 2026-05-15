@@ -44,6 +44,7 @@ export default function CoachConversationsAdmin() {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [promote, setPromote] = useState(null); // { question, answer, title, source }
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -71,6 +72,27 @@ export default function CoachConversationsAdmin() {
       setError(e.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deleteConversation(id) {
+    if (!confirm("Delete this conversation? This cannot be undone.")) return;
+    setDeleting(id);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/coach-conversations?id=${id}`, {
+        method: "DELETE",
+        headers: { Authorization: await authHeader() },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete");
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (selectedId === id) { setSelectedId(null); setThread(null); }
+      setStatus("Conversation deleted.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -251,9 +273,10 @@ export default function CoachConversationsAdmin() {
                   borderBottom: `1px solid ${BORDER}`,
                   cursor: "pointer",
                   background: selectedId === c.id ? "rgba(2,26,53,0.04)" : "transparent",
+                  position: "relative",
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 600, color: NAVY, wordBreak: "break-word" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: NAVY, wordBreak: "break-word", paddingRight: 28 }}>
                   {c.lead ? `${c.lead.first_name || ""} ${c.lead.last_name || ""}`.trim() || c.lead.email : "Anonymous visitor"}
                 </div>
                 <div style={{ fontSize: 12, color: "rgba(2,26,53,0.6)", marginTop: 2, wordBreak: "break-all" }}>
@@ -262,6 +285,25 @@ export default function CoachConversationsAdmin() {
                 <div style={{ fontSize: 11, color: "rgba(2,26,53,0.5)", marginTop: 4 }}>
                   {new Date(c.updated_at).toLocaleString()} · {c.message_count} msgs
                 </div>
+                <button
+                  title="Delete conversation"
+                  disabled={deleting === c.id}
+                  onClick={(e) => { e.stopPropagation(); deleteConversation(c.id); }}
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    color: "rgba(180,0,0,0.5)",
+                    padding: 2,
+                    lineHeight: 1,
+                  }}
+                >
+                  🗑
+                </button>
               </div>
             ))}
             {!loading && conversations.length === 0 && (

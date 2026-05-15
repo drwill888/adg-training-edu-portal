@@ -26,8 +26,8 @@ async function getCallerEmail(req) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
+  if (!["GET", "DELETE"].includes(req.method)) {
+    res.setHeader("Allow", "GET, DELETE");
     return res.status(405).json({ error: "Method not allowed" });
   }
   if (!supabaseAdmin) return res.status(500).json({ error: "Database is not configured" });
@@ -35,6 +35,20 @@ export default async function handler(req, res) {
   const email = await getCallerEmail(req);
   if (!email || email !== ADMIN_EMAIL.toLowerCase()) {
     return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (req.method === "DELETE") {
+    const id = req.query.id;
+    if (!id) return res.status(400).json({ error: "id is required" });
+    try {
+      await supabaseAdmin.from("coach_messages").delete().eq("conversation_id", id);
+      const { error } = await supabaseAdmin.from("coach_conversations").delete().eq("id", id);
+      if (error) throw error;
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      console.error("[admin/coach-conversations] delete error", err);
+      return res.status(500).json({ error: err.message || "Server error" });
+    }
   }
 
   try {
