@@ -69,10 +69,11 @@ Return only valid JSON.`,
 
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content || "{}";
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 
     let parsed = {};
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(cleaned);
     } catch {
       parsed = { summary: raw, primary_5c: null, recommended_next_step: null };
     }
