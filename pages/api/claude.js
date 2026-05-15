@@ -1,7 +1,19 @@
+import { enforceAiRateLimit } from "../../lib/ratelimit";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  const rl = await enforceAiRateLimit(req);
+  if (!rl.ok) {
+    res.setHeader("Retry-After", String(rl.retryAfter));
+    return res.status(429).json({
+      error: "Too many requests. Please slow down.",
+      retryAfter: rl.retryAfter,
+    });
+  }
+
   try {
     const { prompt, messages } = req.body;
     const msgs = messages || [{ role: "user", content: prompt }];

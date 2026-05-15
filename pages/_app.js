@@ -3,6 +3,8 @@ import '../styles/globals.css'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { supabase } from '../lib/supabase'
 import { colors, fonts } from '../styles/tokens'
 
@@ -113,6 +115,8 @@ export default function App({ Component, pageProps }) {
     <>
       <Component {...pageProps} session={session} />
       {shouldShowCoach(router.pathname) && <WebsiteCoach />}
+      <Analytics />
+      <SpeedInsights />
     </>
   )
 }
