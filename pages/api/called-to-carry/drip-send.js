@@ -13,12 +13,12 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM   = process.env.RESEND_FROM_EMAIL || 'Will @ ADG <will@awakeningdestiny.global>';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const SITE_URL = 'https://5cblueprint.awakeningdestiny.global';
 
 export default async function handler(req, res) {
   // Protect endpoint — Vercel sends the CRON_SECRET automatically
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });const SITE_URL = 'https://5cblueprint.awakeningdestiny.global';
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const today = new Date().toISOString().split('T')[0];
