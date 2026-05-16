@@ -1,8 +1,8 @@
 // pages/api/self-paced/create-checkout-session.js
-// Creates a Stripe Checkout session for the Self-Paced Journey ($67)
+// Creates a Stripe Checkout session for the Self-Paced Journey ($149)
 // Env vars required:
 //   STRIPE_SECRET_KEY
-//   STRIPE_SELF_PACED_PRICE_ID  — create in Stripe dashboard, $67 one-time
+//   STRIPE_SELF_PACED_PRICE_ID  — create in Stripe dashboard, $149 one-time
 //   NEXT_PUBLIC_SITE_URL
 
 import Stripe from 'stripe';
