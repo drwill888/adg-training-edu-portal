@@ -80,6 +80,36 @@ export default function AdminNav() {
             </a>
           );
         })}
+
+        {/* Divider */}
+        <span style={{ color: BORDER, fontSize: 18, alignSelf: "center" }}>|</span>
+
+        {/* External: Email + SMS tools */}
+        {[
+          { href: "https://adg-admin-tools.vercel.app/email", label: "✉ Email" },
+          { href: "https://adg-admin-tools.vercel.app/sms", label: "📱 SMS" },
+        ].map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              padding: "6px 12px",
+              borderRadius: 6,
+              color: GOLD,
+              background: "transparent",
+              border: `1px solid ${GOLD}55`,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            {l.label} ↗
+          </a>
+        ))}
       </div>
     </div>
   );
