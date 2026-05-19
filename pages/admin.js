@@ -252,7 +252,24 @@ export default function AdminDashboard() {
           <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>5C Blueprint — Admin</div>
           <div style={{ fontSize: 11, color: GOLD, fontStyle: "italic" }}>Awakening Destiny Global</div>
         </div>
-        <a href="/" style={{ fontSize: 13, color: GOLD, textDecoration: "none" }}>← Dashboard</a>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <a href="https://adg-admin-tools.vercel.app/email"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: "#fff", textDecoration: "none", background: "#0f3d6e", borderRadius: 4, padding: "4px 10px", letterSpacing: "0.08em", fontWeight: 600 }}>
+            ✉ EMAIL
+          </a>
+          <a href="https://adg-admin-tools.vercel.app/sms"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: "#fff", textDecoration: "none", background: "#0f3d6e", borderRadius: 4, padding: "4px 10px", letterSpacing: "0.08em", fontWeight: 600 }}>
+            📱 SMS
+          </a>
+          <a href="https://adg-admin-tools.vercel.app/dashboard"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: GOLD, textDecoration: "none", border: "1px solid " + GOLD, borderRadius: 4, padding: "4px 10px", letterSpacing: "0.08em", fontWeight: 600 }}>
+            ↗ ALL TOOLS
+          </a>
+          <a href="/" style={{ fontSize: 13, color: GOLD, textDecoration: "none", marginLeft: 8 }}>← Dashboard</a>
+        </div>
       </div>
 
       {/* Summary Cards Row 1 */}
