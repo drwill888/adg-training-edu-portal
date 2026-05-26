@@ -13,6 +13,7 @@ const ALLOWED_ORIGINS = [
   'https://awakeningdestiny.global',
   'https://www.awakeningdestiny.global',
   'https://5cblueprint.awakeningdestiny.global',
+  'https://ezra.edu.awakeningdestiny.global',
 ];
 
 // Lazy-load a product's prompt module by slug
