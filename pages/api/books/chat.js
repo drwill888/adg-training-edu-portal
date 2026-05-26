@@ -150,6 +150,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error(`Book chat error [${productSlug}]:`, err);
-    return res.status(500).json({ error: err?.message || String(err) || 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
