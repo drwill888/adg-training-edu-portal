@@ -47,7 +47,7 @@ const publicPages = [
   '/blueprint/thank-you',
 ]
 
-const publicPrefixes = ['/called-to-carry/assessment/results']
+const publicPrefixes = ['/called-to-carry/assessment/results', '/books']
 
 export default function App({ Component, pageProps }) {
   const router = useRouter()
