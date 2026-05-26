@@ -8,7 +8,8 @@ import { supabase } from '../../lib/supabase';
 import AdminNav from '../../components/AdminNav';
 import { useIsMobile } from '../../lib/useBreakpoint';
 
-const ADMIN_EMAIL = 'meier.will@gmail.com';
+const ADMIN_EMAIL  = 'meier.will@gmail.com';
+const PRODUCT_SLUG = 'child-education';
 const NAVY   = '#021A35';
 const GOLD   = '#FDD20D';
 const CREAM  = '#FDF8F0';
@@ -40,6 +41,8 @@ export default function EduKbAdmin() {
   const [deleting, setDeleting]     = useState(null);
   const [error, setError]           = useState('');
   const [status, setStatus]         = useState('');
+  const [ingesting, setIngesting]   = useState(false);
+  const [ingestResult, setIngestResult] = useState(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -51,6 +54,23 @@ export default function EduKbAdmin() {
   async function authHeader() {
     const { data } = await supabase.auth.getSession();
     return data.session ? `Bearer ${data.session.access_token}` : '';
+  }
+
+  async function runIngest() {
+    setIngesting(true);
+    setIngestResult(null);
+    setError('');
+    try {
+      const res = await fetch('/api/books/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: await authHeader() },
+        body: JSON.stringify({ productSlug: PRODUCT_SLUG }),
+      });
+      const json = await res.json();
+      setIngestResult(json);
+      if (res.ok) await loadDocs();
+    } catch (e) { setIngestResult({ error: e.message }); }
+    finally { setIngesting(false); }
   }
 
   async function loadDocs() {
@@ -139,6 +159,24 @@ export default function EduKbAdmin() {
               + Add document
             </button>
           )}
+        </div>
+
+        {/* Ingest card */}
+        <div style={{ background: 'white', border: `1px solid ${BORDER}`, borderLeft: `4px solid ${GOLD}`, borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontWeight: 700, color: NAVY, fontSize: 14 }}>Re-index Knowledge Base</div>
+            <div style={{ fontSize: 12, color: 'rgba(2,26,53,0.55)', marginTop: 2 }}>
+              Reads <code style={{ background: '#f3f4f6', padding: '1px 5px', borderRadius: 3 }}>knowledge/child-education/content.md</code>, chunks it, embeds it, and loads it into Supabase. Run after updating the manuscript.
+            </div>
+            {ingestResult && (
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: ingestResult.error ? '#991b1b' : '#166534' }}>
+                {ingestResult.error ? `✗ ${ingestResult.error}` : `✓ ${ingestResult.message}`}
+              </div>
+            )}
+          </div>
+          <button style={{ ...btn('primary'), whiteSpace: 'nowrap', flexShrink: 0 }} onClick={runIngest} disabled={ingesting}>
+            {ingesting ? 'Ingesting…' : 'Run Ingest'}
+          </button>
         </div>
 
         {/* Status / Error */}
