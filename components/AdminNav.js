@@ -14,7 +14,7 @@ const LINKS = [
   { href: "/admin/coach-health", label: "Ezra · Health" },
   { href: "/admin/coach-kb", label: "Ezra · Knowledge" },
   { href: "/admin/coach-conversations", label: "Ezra · Conversations" },
-  { href: "/admin/edu-kb", label: "Ezra · Edu" },
+  { href: "/admin/edu-kb", label: "Ezra · Edu KB" },
   { href: "/admin/edu-conversations", label: "Edu · Conversations" },
 ];
 
