@@ -180,6 +180,9 @@ export default function BookPage({ product }) {
             <p style={{ fontSize: '0.8rem', color: GRAY, textAlign: 'center', lineHeight: 1.5 }}>
               Secure checkout via Stripe. One-time payment. Access begins immediately.
             </p>
+            <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', lineHeight: 1.6, maxWidth: 380, margin: '4px auto 0' }}>
+              Ezra is an AI coaching tool trained on Will Meier&apos;s book. It is not a licensed educator, therapist, or diagnostician. For learning disabilities, medical concerns, or clinical questions, please consult a qualified professional.
+            </p>
           </form>
         </div>
       </section>
