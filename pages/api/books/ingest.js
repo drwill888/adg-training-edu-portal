@@ -8,8 +8,38 @@ import { getEmbeddings } from '@/lib/embeddings';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getProduct } from '@/lib/products/registry';
 
-const CHUNK_SEPARATOR = /\n---\n/;
-const MIN_CHUNK_LENGTH = 100;
+const CHUNK_SEPARATOR   = /\n---\n/;
+const MIN_CHUNK_LENGTH  = 100;
+const MAX_CHUNK_CHARS   = 800; // target size for each embedded chunk
+
+// After splitting by ---, further break large sections into paragraph-sized chunks
+function subChunk(section) {
+  const paras = section.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  const out = [];
+  let current = '';
+  for (const para of paras) {
+    const candidate = current ? current + '\n\n' + para : para;
+    if (candidate.length > MAX_CHUNK_CHARS && current) {
+      out.push(current.trim());
+      current = para;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.trim()) out.push(current.trim());
+  return out.length ? out : [section.trim()];
+}
+
+// Embed in batches to avoid timeouts on large files
+async function embedInBatches(texts, batchSize = 50) {
+  const all = [];
+  for (let i = 0; i < texts.length; i += batchSize) {
+    const batch = texts.slice(i, i + batchSize);
+    const vecs  = await getEmbeddings(batch);
+    all.push(...vecs);
+  }
+  return all;
+}
 
 const ADMIN_EMAIL = 'meier.will@gmail.com';
 
@@ -47,16 +77,19 @@ export default async function handler(req, res) {
     const filePath = path.join(process.cwd(), 'knowledge', product.knowledgeFile);
     const raw = fs.readFileSync(filePath, 'utf-8');
 
-    const chunks = raw
+    // Split by --- then sub-chunk each section into paragraph-sized pieces
+    const sections = raw
       .split(CHUNK_SEPARATOR)
       .map((c) => c.trim())
       .filter((c) => c.length >= MIN_CHUNK_LENGTH && !c.startsWith('# PLACEHOLDER'));
+
+    const chunks = sections.flatMap(subChunk);
 
     if (chunks.length === 0) {
       return res.status(400).json({ error: 'No usable chunks found in knowledge file' });
     }
 
-    const embeddings = await getEmbeddings(chunks);
+    const embeddings = await embedInBatches(chunks);
 
     // Delete existing chunks for this product (idempotent re-runs)
     await supabaseAdmin.from('coach_chunks').delete().eq('source', productSlug);
