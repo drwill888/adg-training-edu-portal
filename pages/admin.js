@@ -52,6 +52,8 @@ export default function AdminDashboard() {
   var sendEmailState = useState({ email: "", name: "", status: "" }); var sendEmail = sendEmailState[0]; var setSendEmail = sendEmailState[1];
   var resendingState = useState(null); var resending = resendingState[0]; var setResending = resendingState[1];
   var resendPaymentState = useState(null); var resendingPayment = resendPaymentState[0]; var setResendingPayment = resendPaymentState[1];
+  var ingestResultsState = useState({}); var ingestResults = ingestResultsState[0]; var setIngestResults = ingestResultsState[1];
+  var ingestLoadingState = useState({}); var ingestLoading = ingestLoadingState[0]; var setIngestLoading = ingestLoadingState[1];
 
   useEffect(function() {
     async function checkAuth() {
@@ -229,6 +231,26 @@ export default function AdminDashboard() {
     a.href = url; a.download = "5c-applications-" + new Date().toISOString().split("T")[0] + ".csv"; a.click(); URL.revokeObjectURL(url);
   }
 
+  async function runIngest(productSlug) {
+    setIngestLoading(function(prev) { return { ...prev, [productSlug]: true }; });
+    setIngestResults(function(prev) { return { ...prev, [productSlug]: null }; });
+    try {
+      var sessionResult = await supabase.auth.getSession();
+      var token = sessionResult.data.session ? sessionResult.data.session.access_token : "";
+      var res = await fetch("/api/books/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ productSlug: productSlug }),
+      });
+      var data = await res.json();
+      setIngestResults(function(prev) { return { ...prev, [productSlug]: data }; });
+    } catch (err) {
+      setIngestResults(function(prev) { return { ...prev, [productSlug]: { error: err.message || "Request failed" } }; });
+    } finally {
+      setIngestLoading(function(prev) { return { ...prev, [productSlug]: false }; });
+    }
+  }
+
   function exportSubmissionsCSV() {
     var rows = [["Name", "Email", "Office", "Overlay", "Archetype", "Paid", "Tier", "Applied", "Date"]];
     submissions.forEach(function(s) {
@@ -354,14 +376,14 @@ export default function AdminDashboard() {
       {/* Tabs */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "8px 24px" }}>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["overview", "funnel", "payments", "applications", "progress", "analytics"].map(function(t) {
+          {["overview", "funnel", "payments", "applications", "progress", "analytics", "ezra-edu"].map(function(t) {
             var badge = t === "applications" && pendingApps > 0 ? pendingApps : null;
             var funnelBadge = t === "funnel" && submissions.length > 0 ? submissions.length : null;
             var activeBadge = badge || funnelBadge;
             return (
               <button key={t} onClick={function() { setTab(t); }}
                 style={{ padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", background: tab === t ? NAVY : "transparent", color: tab === t ? GOLD_BRIGHT : "#888", border: tab === t ? "none" : "1px solid #e5e7eb", position: "relative" }}>
-                {t === "funnel" ? "Called to Carry" : t.charAt(0).toUpperCase() + t.slice(1)}
+                {t === "funnel" ? "Called to Carry" : t === "ezra-edu" ? "Ezra · Edu" : t.charAt(0).toUpperCase() + t.slice(1)}
                 {activeBadge && (
                   <span style={{ position: "absolute", top: -6, right: -6, background: t === "funnel" ? "#0172BC" : "#EE3124", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {activeBadge}
@@ -764,6 +786,62 @@ export default function AdminDashboard() {
                   </div>
                 );
               })()}
+            </div>
+          </div>
+        )}
+
+        {/* Ezra · Edu — Knowledge Base Ingest */}
+        {tab === "ezra-edu" && (
+          <div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY, marginBottom: 8 }}>Ezra · Edu — Knowledge Base</h2>
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 24, lineHeight: 1.6 }}>
+              Load or reload each book's knowledge base into Supabase so Ezra can answer questions from it.
+              Run once when you set up a book, and again whenever you update the manuscript.
+            </p>
+
+            {[
+              { slug: "child-education", name: "How to Educate Your Child", price: "$20", days: 60 },
+            ].map(function(product) {
+              var result  = ingestResults[product.slug];
+              var busy    = ingestLoading[product.slug];
+              var success = result && !result.error;
+              var failed  = result && result.error;
+              return (
+                <div key={product.slug} style={{ background: "#fff", border: "1px solid " + (success ? "#bbf7d0" : failed ? "#fecaca" : "#e5e7eb"), borderLeft: "4px solid " + (success ? "#16a34a" : failed ? "#dc2626" : GOLD), borderRadius: 12, padding: "20px 24px", marginBottom: 16 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: NAVY, marginBottom: 4 }}>{product.name}</div>
+                      <div style={{ fontSize: 12, color: "#888", fontFamily: "monospace" }}>
+                        slug: {product.slug} · {product.days} days · {product.price} · 10 msg/day
+                      </div>
+                    </div>
+                    <button
+                      onClick={function() { runIngest(product.slug); }}
+                      disabled={busy}
+                      style={{ padding: "10px 22px", background: busy ? "#f3f4f6" : NAVY, color: busy ? "#888" : GOLD_BRIGHT, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: busy ? "not-allowed" : "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                    >
+                      {busy ? "Ingesting…" : "Run Ingest"}
+                    </button>
+                  </div>
+                  {result && (
+                    <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: success ? "#f0fdf4" : "#fef2f2", border: "1px solid " + (success ? "#bbf7d0" : "#fecaca") }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: success ? "#16a34a" : "#dc2626" }}>
+                        {success ? "✓ " + result.message : "✗ " + result.error}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: "14px 18px", marginTop: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: NAVY, marginBottom: 6 }}>To add a new book later:</div>
+              <ol style={{ fontSize: 12, color: "#555", lineHeight: 1.8, paddingLeft: 18, margin: 0 }}>
+                <li>Add its entry to <code style={{ background: "#e5e7eb", padding: "1px 5px", borderRadius: 3 }}>lib/products/registry.js</code></li>
+                <li>Add a prompt file at <code style={{ background: "#e5e7eb", padding: "1px 5px", borderRadius: 3 }}>lib/products/[slug]/prompt.js</code></li>
+                <li>Add the manuscript at <code style={{ background: "#e5e7eb", padding: "1px 5px", borderRadius: 3 }}>knowledge/[slug]/content.md</code></li>
+                <li>Come back here and click Run Ingest — it will appear automatically</li>
+              </ol>
             </div>
           </div>
         )}

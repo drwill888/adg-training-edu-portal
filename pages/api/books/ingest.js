@@ -11,11 +11,29 @@ import { getProduct } from '@/lib/products/registry';
 const CHUNK_SEPARATOR = /\n---\n/;
 const MIN_CHUNK_LENGTH = 100;
 
+const ADMIN_EMAIL = 'meier.will@gmail.com';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // Accept either x-admin-key header OR a valid Supabase admin session token
   const adminKey = req.headers['x-admin-key'];
-  if (!adminKey || adminKey !== process.env.ADMIN_SECRET) {
+  const bearerToken = (req.headers['authorization'] || '').replace('Bearer ', '');
+
+  let authorized = adminKey && adminKey === process.env.ADMIN_SECRET;
+
+  if (!authorized && bearerToken) {
+    // Verify supabase session belongs to the admin
+    const { createClient } = await import('@supabase/supabase-js');
+    const client = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+    const { data } = await client.auth.getUser(bearerToken);
+    if (data?.user?.email === ADMIN_EMAIL) authorized = true;
+  }
+
+  if (!authorized) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
