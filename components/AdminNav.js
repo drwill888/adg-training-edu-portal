@@ -15,6 +15,8 @@ const LINKS = [
   { href: "/admin/coach-kb", label: "Ezra · Knowledge" },
   { href: "/admin/coach-conversations", label: "Ezra · Conversations" },
   { href: "/admin?tab=ezra-edu", label: "Ezra · Edu" },
+  { href: "/admin/edu-conversations", label: "Edu · Conversations" },
+  { href: "/admin/edu-kb", label: "Edu · Knowledge" },
 ];
 
 export default function AdminNav() {

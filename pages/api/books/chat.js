@@ -91,8 +91,8 @@ export default async function handler(req, res) {
     const buildPrompt  = promptMod.buildPrompt;
     const buildHistory = promptMod.buildHistoryMessages;
 
-    // 4) Session
-    const conversation   = await getOrCreateConversation(sessionId);
+    // 4) Session — tag with productSlug so admin can filter by book
+    const conversation   = await getOrCreateConversation(sessionId, productSlug);
     const conversationId = conversation.id;
 
     // 5) Retrieval
