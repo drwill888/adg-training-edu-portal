@@ -52,8 +52,8 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'id required' });
     // Get the doc to find its title (used as chunk group tag)
     const { data: doc } = await supabase.from('edu_documents').select('title').eq('id', id).single();
-    // Delete chunks tagged with this doc id
-    await supabase.from('coach_chunks').delete().eq('document_id', id);
+    // Delete chunks tagged with this doc id (document_id stored as TEXT)
+    await supabase.from('coach_chunks').delete().eq('document_id', String(id));
     // Delete the document record
     const { error } = await supabase.from('edu_documents').delete().eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
       content:     c,
       embedding:   embeddings[i],
       source:      productSlug,
-      document_id: doc.id,
+      document_id: String(doc.id), // TEXT column — store as string
     }));
 
     const { error: chunkErr } = await supabase.from('coach_chunks').insert(rows);
