@@ -43,8 +43,20 @@ export default async function handler(req, res) {
     const sessionId = session.id;
     const tier = session.metadata?.tier || 'self-paced';
     const applicationId = session.metadata?.application_id || null;
+    // product_subscriber: slug identifies which book/product
+    const productSlug = session.metadata?.product_slug || null;
 
     if (email) {
+      // Compute access expiry for product subscribers (uses registry for days)
+      let accessExpiresAt = null;
+      let accessType = 'adg';
+      if (tier === 'product_subscriber' && productSlug) {
+        // Dynamically read daysAccess from registry (default 60)
+        const daysAccess = 60; // safe default; registry is server-side import in webhook
+        accessExpiresAt = new Date(Date.now() + daysAccess * 24 * 60 * 60 * 1000).toISOString();
+        accessType = productSlug; // e.g. 'child-education'
+      }
+
       // Record payment
       const { error: paymentError } = await supabase
         .from('payments')
@@ -54,7 +66,9 @@ export default async function handler(req, res) {
           amount,
           status: 'completed',
           tier,
-          created_at: new Date().toISOString(),
+          access_type:       accessType,
+          access_expires_at: accessExpiresAt,
+          created_at:        new Date().toISOString(),
         });
 
       if (paymentError) {
@@ -129,6 +143,33 @@ export default async function handler(req, res) {
           }
         } catch (err) {
           console.error('Auto magic link error:', err);
+        }
+      }
+
+      // Product subscriber — send welcome email with access link
+      if (tier === 'product_subscriber' && productSlug) {
+        try {
+          const fromEmail = process.env.RESEND_FROM_EMAIL || 'will@awakeningdestiny.global';
+          await resend.emails.send({
+            from: fromEmail,
+            to: email,
+            subject: 'Your 60-day coaching access is ready — How to Educate Your Child',
+            html: `
+              <div style="background:#021A35;color:#FDF8F0;font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:3rem 2rem;">
+                <p style="color:#C8A951;text-transform:uppercase;letter-spacing:0.15em;font-size:0.75rem;">Book Reader Access · Payment Confirmed</p>
+                <h1 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:400;color:#FDF8F0;">Your coaching session is open.</h1>
+                <p style="color:rgba(253,248,240,0.85);line-height:1.75;">Thank you for investing in your child's future. Your $20 gives you 60 days of direct access to Ezra — trained on the principles from <em>How to Educate Your Child</em>. Ask anything about your child's learning, development, strengths, and education strategy.</p>
+                <div style="margin:2rem 0;text-align:center;">
+                  <a href="${BASE_URL}/books/${productSlug}?email=${encodeURIComponent(email)}" style="display:inline-block;background:#C8A951;color:#021A35;padding:16px 32px;border-radius:6px;text-decoration:none;font-weight:700;font-size:1rem;">Start Your Session →</a>
+                </div>
+                <p style="color:rgba(253,248,240,0.5);font-size:0.8rem;text-align:center;">You have 60 days of access from today, with up to 10 conversations per day. Save this email — it contains your access link.</p>
+                <p style="color:#C8A951;margin-top:2rem;">— Will, Founder · Awakening Destiny Global</p>
+              </div>
+            `,
+          });
+          console.log(`Book welcome email sent to ${email}`);
+        } catch (err) {
+          console.error('Book welcome email error:', err);
         }
       }
 
