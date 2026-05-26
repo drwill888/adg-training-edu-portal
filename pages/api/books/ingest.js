@@ -103,6 +103,28 @@ export default async function handler(req, res) {
     const { error } = await supabaseAdmin.from('coach_chunks').insert(rows);
     if (error) throw error;
 
+    // Upsert a tracking record in edu_documents so the KB page shows the file
+    const { data: existing } = await supabaseAdmin
+      .from('edu_documents')
+      .select('id')
+      .eq('product_slug', productSlug)
+      .eq('title', `${product.name} — Full Manuscript`)
+      .maybeSingle();
+
+    if (existing) {
+      await supabaseAdmin
+        .from('edu_documents')
+        .update({ chunk_count: rows.length, updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+    } else {
+      await supabaseAdmin.from('edu_documents').insert({
+        product_slug: productSlug,
+        title:        `${product.name} — Full Manuscript`,
+        content:      '(ingested from knowledge file)',
+        chunk_count:  rows.length,
+      });
+    }
+
     return res.status(200).json({
       ok:              true,
       product:         product.name,
