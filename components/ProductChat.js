@@ -39,8 +39,8 @@ export default function ProductChat({ productSlug, product, initialEmail = '', i
   const [remaining, setRemaining]       = useState(product?.dailyLimit ?? 10);
   const [blocked, setBlocked]           = useState(false);
   const [blockReason, setBlockReason]   = useState('');
-  const bottomRef = useRef(null);
-  const inputRef  = useRef(null);
+  const messagesRef = useRef(null);
+  const inputRef    = useRef(null);
 
   const dailyLimit = product?.dailyLimit ?? 10;
 
@@ -64,7 +64,9 @@ export default function ProductChat({ productSlug, product, initialEmail = '', i
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [messages, loading]);
 
   useEffect(() => {
@@ -169,7 +171,7 @@ export default function ProductChat({ productSlug, product, initialEmail = '', i
       </div>
 
       {/* Messages */}
-      <div style={styles.messages}>
+      <div ref={messagesRef} style={styles.messages}>
         {messages.map((m, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
             <div style={{
@@ -195,7 +197,6 @@ export default function ProductChat({ productSlug, product, initialEmail = '', i
             </div>
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
