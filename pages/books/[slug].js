@@ -192,9 +192,9 @@ export default function BookPage({ product }) {
       {/* ── Already a customer? bar ───────────────────────────────────────── */}
       <div style={{ background: 'rgba(200,169,81,0.1)', borderBottom: '1px solid rgba(200,169,81,0.2)', padding: '10px 24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
         <span style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.6)' }}>Already purchased access?</span>
-        <a href="#my-session" style={{ fontSize: '0.8rem', color: GOLD, fontWeight: 600, textDecoration: 'none' }}>Open your session →</a>
+        <a href="#my-session" style={{ fontSize: '0.8rem', color: GOLD, fontWeight: 600, textDecoration: 'none' }}>Open your session</a>
         <span style={{ color: 'rgba(255,255,255,0.2)', margin: '0 4px' }}>|</span>
-        <span style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.55)' }}>📋 <a href="#my-session" style={{ color: 'rgba(253,248,240,0.55)', textDecoration: 'underline' }}>Get free template ↓</a></span>
+        <span style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.55)' }}><a href="#my-session" style={{ color: 'rgba(253,248,240,0.55)', textDecoration: 'underline' }}>Get free template</a></span>
       </div>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -210,9 +210,9 @@ export default function BookPage({ product }) {
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           <a href="#purchase" style={{ background: GOLD, color: NAVY, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none', letterSpacing: '0.02em' }}>
-            Get {product.daysAccess}-Day Access — {price} →
+            Get {product.daysAccess}-Day Access — {price}
           </a>
-          <DownloadGate dark label="📋 Free Planning Template" />
+          <DownloadGate dark label="Free Planning Template" />
         </div>
         <p style={{ fontSize: '0.78rem', color: 'rgba(253,248,240,0.35)' }}>One-time payment. Secure checkout via Stripe. Access begins immediately.</p>
       </section>
@@ -529,7 +529,7 @@ export default function BookPage({ product }) {
               <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Your free fillable PDF planning template</p>
             </div>
           </div>
-          <DownloadGate dark label="↓ Download" />
+          <DownloadGate dark label="Download Template" />
         </div>
 
         <div style={{ width: '100%', maxWidth: 640 }}>
@@ -579,9 +579,9 @@ export default function BookPage({ product }) {
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="#purchase" style={{ background: NAVY, color: GOLD, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none' }}>
-            Get Access Now →
+            Get Access Now
           </a>
-          <DownloadGate dark={false} label="📋 Free Template" />
+          <DownloadGate dark={false} label="Free Template" />
         </div>
       </section>
     </>
