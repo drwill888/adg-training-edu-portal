@@ -131,6 +131,10 @@ const FAQ_ITEMS = [
     q: 'Is my information private?',
     a: 'Yes. Your email is used only to verify your access. Your conversations with Ezra are stored securely and are never sold or shared. The data is used only to deliver and improve the coaching experience.',
   },
+  {
+    q: 'Important disclaimer — how to use Ezra responsibly.',
+    a: 'Ezra is an AI coaching tool built on Will Meier\'s book. It is not a substitute for professional educational assessment, licensed therapy, or medical advice. It does not diagnose learning disabilities, developmental delays, ADHD, or any clinical condition. Use Ezra to think more clearly about your child\'s education and development — not to replace conversations with teachers, specialists, or healthcare providers. When clinical or medical concerns arise, always consult a qualified professional. Ezra is a coaching companion, not a clinician.',
+  },
 ];
 
 export default function BookPage({ product }) {
