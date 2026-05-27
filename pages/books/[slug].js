@@ -607,7 +607,7 @@ export default function BookPage({ product }) {
                   <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Fill this out so Ezra knows your child personally</p>
                 </div>
               </div>
-              <a href="/books/diagnostic" style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              <a href={`/books/diagnostic?email=${encodeURIComponent(sessionEmail)}`} style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                 Fill the Diagnostic
               </a>
             </div>
@@ -630,7 +630,7 @@ export default function BookPage({ product }) {
                       {p.child_name || 'Unnamed child'}
                     </button>
                   ))}
-                  <a href="/books/diagnostic" style={{ color: 'rgba(253,248,240,0.45)', fontSize: '0.78rem', textDecoration: 'underline', alignSelf: 'center', marginLeft: 4 }}>
+                  <a href={`/books/diagnostic?email=${encodeURIComponent(sessionEmail)}`} style={{ color: 'rgba(253,248,240,0.45)', fontSize: '0.78rem', textDecoration: 'underline', alignSelf: 'center', marginLeft: 4 }}>
                     + Add another child
                   </a>
                 </div>

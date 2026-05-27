@@ -324,13 +324,23 @@ export default function DiagnosticPage() {
   const [summaryBlocked, setSumBlocked] = useState(false);
   const [summaryError, setSumError]     = useState('');
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount — also pick up ?email= from URL (passed from paid session)
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setValues(JSON.parse(stored));
+
+      // URL email takes priority (coming from paid Ezra session)
+      const urlEmail = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('email')
+        : null;
       const storedEmail = localStorage.getItem(STORAGE_KEY + '_email');
-      if (storedEmail) setSaveEmail(storedEmail);
+      const emailToUse = urlEmail ? decodeURIComponent(urlEmail) : storedEmail;
+
+      if (emailToUse) {
+        setSaveEmail(emailToUse);
+        try { localStorage.setItem(STORAGE_KEY + '_email', emailToUse); } catch (_) {}
+      }
     } catch (_) {}
   }, []);
 
