@@ -7,7 +7,8 @@ import { getProduct } from '@/lib/products/registry';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, productSlug } = req.body || {};
+  const { email, firstName, lastName, productSlug } = req.body || {};
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
 
   if (!productSlug) return res.status(400).json({ error: 'productSlug is required' });
 
@@ -42,6 +43,9 @@ export default async function handler(req, res) {
         tier:         'product_subscriber',
         product_slug: productSlug,
         email:        email || '',
+        first_name:   firstName || '',
+        last_name:    lastName  || '',
+        full_name:    fullName  || '',
       },
     });
 

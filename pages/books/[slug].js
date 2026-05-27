@@ -136,6 +136,8 @@ const FAQ_ITEMS = [
 
 export default function BookPage({ product }) {
   const [email, setEmail]             = useState('');
+  const [firstName, setFirstName]     = useState('');
+  const [lastName, setLastName]       = useState('');
   const [checkoutLoading, setCL]      = useState(false);
   const [hasPaid, setHasPaid]         = useState(false);
   const [initialEmail, setInitialEmail] = useState('');
@@ -157,7 +159,7 @@ export default function BookPage({ product }) {
     try {
       const res  = await fetch('/api/books/checkout', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), productSlug: product.slug }),
+        body: JSON.stringify({ email: email.trim(), firstName: firstName.trim(), lastName: lastName.trim(), productSlug: product.slug }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
@@ -454,12 +456,24 @@ export default function BookPage({ product }) {
           </div>
 
           <form onSubmit={handleCheckout} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <input
+                type="text" placeholder="First name"
+                value={firstName} onChange={(e) => setFirstName(e.target.value)} required
+                style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: '14px 16px', fontSize: 15, outline: 'none', color: NAVY, background: WHITE, width: '100%' }}
+              />
+              <input
+                type="text" placeholder="Last name"
+                value={lastName} onChange={(e) => setLastName(e.target.value)} required
+                style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: '14px 16px', fontSize: 15, outline: 'none', color: NAVY, background: WHITE, width: '100%' }}
+              />
+            </div>
             <input
               type="email" placeholder="Your email address"
               value={email} onChange={(e) => setEmail(e.target.value)} required
               style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: '14px 16px', fontSize: 15, outline: 'none', color: NAVY, background: WHITE, width: '100%' }}
             />
-            <button type="submit" disabled={checkoutLoading || !email.trim()}
+            <button type="submit" disabled={checkoutLoading || !email.trim() || !firstName.trim() || !lastName.trim()}
               style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 8, padding: '16px 0', fontWeight: 700, fontSize: 16, width: '100%', letterSpacing: '0.02em', cursor: checkoutLoading || !email.trim() ? 'not-allowed' : 'pointer', opacity: checkoutLoading || !email.trim() ? 0.7 : 1 }}>
               {checkoutLoading ? 'Redirecting…' : `Get ${product.daysAccess}-Day Access — ${price} →`}
             </button>
