@@ -152,6 +152,16 @@ export default function BookPage({ product }) {
   const [childPlans, setChildPlans]   = useState([]);   // [{child_name, updated_at}]
   const [activeChild, setActiveChild] = useState('');   // selected child_name
 
+  // Scroll to #purchase when arriving from an external link (e.g. diagnostic page)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash === '#purchase') {
+      setTimeout(() => {
+        document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' });
+      }, 400);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
@@ -405,10 +415,10 @@ export default function BookPage({ product }) {
               </ul>
             </div>
             <div style={{ marginTop: '1.5rem' }}>
-              <a href="#purchase"
-                style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '12px 28px', borderRadius: 8, fontWeight: 800, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' }}>
+              <button onClick={() => document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' })}
+                style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '12px 28px', borderRadius: 8, fontWeight: 800, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 💳 Purchase {price} Access
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -618,9 +628,10 @@ export default function BookPage({ product }) {
           One-time payment. No subscription. Access starts immediately.
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="#purchase" style={{ background: NAVY, color: GOLD, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none' }}>
+          <button onClick={() => document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' })}
+            style={{ background: NAVY, color: GOLD, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
             Get Access Now
-          </a>
+          </button>
           <DownloadGate dark={false} label="Free Template" />
         </div>
       </section>
