@@ -1,7 +1,11 @@
 // pages/api/books/diagnostic/save.js
-// Free for all — saves form data to Supabase by email.
-// POST { email, productSlug, data }
+// Saves diagnostic form data to Supabase.
+// Free: one child plan per email.
+// Paid: unlimited children — gated at save time.
+// POST { email, productSlug, data, childName? }
+
 import { createClient } from '@supabase/supabase-js';
+import { checkProductAccess } from '@/lib/products/access';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,6 +22,31 @@ export default async function handler(req, res) {
   const normalizedChild = (childName ?? data?.child_name ?? '').trim();
 
   try {
+    // Check how many distinct child plans this email already has
+    const { data: existing, error: fetchErr } = await supabase
+      .from('diagnostic_plans')
+      .select('child_name')
+      .eq('email', normalizedEmail)
+      .eq('product_slug', productSlug);
+
+    if (fetchErr) throw fetchErr;
+
+    const existingChildren = existing?.map(r => r.child_name) ?? [];
+    const isNewChild = !existingChildren.includes(normalizedChild);
+    const hasOtherChildren = existingChildren.some(c => c !== normalizedChild);
+
+    // If adding a second (or more) child, require paid access
+    if (isNewChild && hasOtherChildren) {
+      const access = await checkProductAccess(normalizedEmail, productSlug);
+      if (!access.allowed) {
+        return res.status(200).json({
+          blocked: true,
+          reason: 'multi_child_requires_purchase',
+          message: `You already have a plan saved. Adding plans for multiple children requires a coaching subscription ($19.99). Purchase access to add plans for all your children.`,
+        });
+      }
+    }
+
     const { error } = await supabase
       .from('diagnostic_plans')
       .upsert(

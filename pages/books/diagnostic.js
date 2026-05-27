@@ -318,6 +318,7 @@ export default function DiagnosticPage() {
   const [values, setValues]             = useState({});
   const [saveEmail, setSaveEmail]       = useState('');
   const [cloudStatus, setCloudStatus]   = useState(''); // 'saving' | 'saved' | 'loaded' | 'error'
+  const [multiChildBlocked, setMCB]    = useState(false); // paid gate for 2nd+ child
   const [summary, setSummary]           = useState('');
   const [summaryLoading, setSumLoading] = useState(false);
   const [summaryBlocked, setSumBlocked] = useState(false);
@@ -361,13 +362,20 @@ export default function DiagnosticPage() {
         if (email && email.includes('@')) {
           setCloudStatus('saving');
           try {
-            await fetch('/api/books/diagnostic/save', {
+            const saveRes = await fetch('/api/books/diagnostic/save', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, productSlug: PRODUCT_SLUG, data: next }),
             });
-            setCloudStatus('saved');
-            setTimeout(() => setCloudStatus(''), 2500);
+            const saveJson = await saveRes.json();
+            if (saveJson.blocked && saveJson.reason === 'multi_child_requires_purchase') {
+              setMCB(true);
+              setCloudStatus('error');
+            } else {
+              setMCB(false);
+              setCloudStatus('saved');
+              setTimeout(() => setCloudStatus(''), 2500);
+            }
           } catch (_) { setCloudStatus('error'); }
         }
       }, 1200);
@@ -512,6 +520,24 @@ export default function DiagnosticPage() {
             </button>
           </div>
         </div>
+
+        {/* Multi-child purchase gate banner */}
+        {multiChildBlocked && (
+          <div className="no-print" style={{ background: '#fff8ee', border: '2px solid #c8a45a', borderRadius: 12, padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ fontSize: '0.95rem', fontWeight: 700, color: NAVY, marginBottom: 4 }}>⚠️ Multiple children require a subscription</p>
+              <p style={{ fontSize: '0.85rem', color: '#555', margin: 0, lineHeight: 1.6 }}>
+                You already have a plan saved for another child. Adding plans for multiple children requires a coaching subscription ($19.99). Purchase access to save plans for all your children.
+              </p>
+            </div>
+            <a
+              href="/books/child-education#purchase"
+              style={{ display: 'inline-block', background: NAVY, color: GOLD, padding: '11px 24px', borderRadius: 8, fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              💳 Get Access — $19.99
+            </a>
+          </div>
+        )}
 
         {/* How to Use */}
         <div className="section-block" style={{ marginBottom: '2rem' }}>
