@@ -6,6 +6,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { checkProductAccess } from '@/lib/products/access';
+import { addToIcegramList } from '@/lib/coach/icegram';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -55,6 +56,19 @@ export default async function handler(req, res) {
       );
 
     if (error) throw error;
+
+    // Capture to Icegram EDU list on first save for this email (fire and forget)
+    if (isNewChild && !hasOtherChildren) {
+      addToIcegramList({
+        email: normalizedEmail,
+        config: {
+          formPageUrl: process.env.ICEGRAM_FORM_PAGE_URL,
+          listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
+          formId:      process.env.ICEGRAM_FORM_ID || '10',
+        },
+      }).catch(() => {});
+    }
+
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[diagnostic/save]', err.message);
