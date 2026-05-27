@@ -4,11 +4,17 @@
 // Chat:       Anthropic Claude (warmer, more pastoral coaching tone)
 // The client sends { sessionId, question, email, productSlug } in the request body.
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@supabase/supabase-js';
 import { getEmbedding } from '@/lib/embeddings';
 import { matchProductChunks } from '@/lib/products/retrieval';
 import { checkProductAccess, checkDailyLimit, incrementDailyUsage } from '@/lib/products/access';
 import { getProduct } from '@/lib/products/registry';
 import { getOrCreateConversation, logMessage, getRecentMessages } from '@/lib/coach/session';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const CLAUDE_MODEL      = process.env.BOOK_CLAUDE_MODEL || 'claude-sonnet-4-5';
@@ -42,7 +48,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { sessionId, question, email, productSlug } = req.body;
+  const { sessionId, question, email, productSlug, childName = '' } = req.body;
 
   if (!sessionId || !question || !productSlug) {
     return res.status(400).json({ error: 'sessionId, question, and productSlug are required' });
@@ -93,9 +99,51 @@ export default async function handler(req, res) {
 
     // 3) Load prompt module for this product
     const promptMod = await getPromptModule(productSlug);
-    const systemPrompt = promptMod.SYSTEM_PROMPT;
     const buildPrompt  = promptMod.buildPrompt;
     const buildHistory = promptMod.buildHistoryMessages;
+
+    // 3b) Load the parent's diagnostic plan for this child and inject into system prompt
+    let systemPrompt = promptMod.SYSTEM_PROMPT;
+    try {
+      const query = supabase
+        .from('diagnostic_plans')
+        .select('data, summary, child_name')
+        .eq('email', normalizedEmail)
+        .eq('product_slug', productSlug);
+
+      // If childName specified, load that child's plan; otherwise load most recent
+      if (childName) query.eq('child_name', childName);
+      else query.order('updated_at', { ascending: false });
+
+      const { data: planRow } = await query.maybeSingle();
+
+      if (planRow?.data && Object.keys(planRow.data).length > 5) {
+        const d = planRow.data;
+        const name = d.child_name || planRow.child_name || 'this child';
+        const planBlock = planRow.summary
+          ? `AI PROFILE SUMMARY:\n${planRow.summary}`
+          : `CHILD: ${name}, Age/Grade: ${d.age_grade || 'not provided'}
+PRIMARY GIFTS: ${[d.gift_1, d.gift_2, d.gift_3].filter(Boolean).join(', ') || 'not provided'}
+PASSIONS: ${d.passions || 'not provided'}
+LEARNING PATHWAY: ${['Visual','Auditory','Kinesthetic','Read/Write'].filter(p => d[`primary_pathway_${p}`]).join(', ') || 'not provided'}
+CHALLENGES: ${[d.challenge_1, d.challenge_2, d.challenge_3].filter(Boolean).join(', ') || 'not provided'}
+FORMATION PRIORITIES: ${[d.priority_1, d.priority_2, d.priority_3].filter(Boolean).join(' / ') || 'not provided'}
+WHO THEY ARE BECOMING: ${d.becoming || 'not provided'}`;
+
+        systemPrompt = `${promptMod.SYSTEM_PROMPT}
+
+═══════════════════════════════════════════
+THIS PARENT'S COMPLETED DIAGNOSTIC PLAN
+═══════════════════════════════════════════
+The parent has already filled out the Child Strategic Plan Diagnostic for ${name}. You have their answers below. Use this to personalize every response. Do NOT ask for information already provided here. Reference specific details from their plan to show you know this child.
+
+${planBlock}
+═══════════════════════════════════════════`;
+        console.log(`[chat] Loaded diagnostic plan for ${name} (${normalizedEmail})`);
+      }
+    } catch (planErr) {
+      console.warn('[chat] Could not load diagnostic plan:', planErr.message);
+    }
 
     // 4) Session — tag with productSlug so admin can filter by book
     const conversation   = await getOrCreateConversation(sessionId, productSlug);

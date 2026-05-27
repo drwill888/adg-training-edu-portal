@@ -11,17 +11,18 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, productSlug = 'child-education', data } = req.body || {};
+  const { email, productSlug = 'child-education', data, childName } = req.body || {};
   if (!email || !data) return res.status(400).json({ error: 'email and data are required' });
 
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedChild = (childName ?? data?.child_name ?? '').trim();
 
   try {
     const { error } = await supabase
       .from('diagnostic_plans')
       .upsert(
-        { email: normalizedEmail, product_slug: productSlug, data },
-        { onConflict: 'email,product_slug' }
+        { email: normalizedEmail, product_slug: productSlug, child_name: normalizedChild, data },
+        { onConflict: 'email,product_slug,child_name' }
       );
 
     if (error) throw error;

@@ -26,7 +26,7 @@ function getSession(productSlug) {
 // product       — the registry entry (name, tagline, dailyLimit, etc.)
 // initialEmail  — pre-filled from URL after Stripe redirect
 // introMessage  — opening message from the prompt module
-export default function ProductChat({ productSlug, product, initialEmail = '', introMessage }) {
+export default function ProductChat({ productSlug, product, initialEmail = '', introMessage, childName = '' }) {
   const defaultIntro = introMessage || `I am Ezra — your coaching guide for ${product?.name || 'this book'}.\n\nWhat would you like to work through?`;
 
   const [email, setEmail]               = useState(initialEmail);
@@ -93,7 +93,7 @@ export default function ProductChat({ productSlug, product, initialEmail = '', i
       const res = await fetch('/api/books/chat', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ sessionId, question: q, email, productSlug }),
+        body:    JSON.stringify({ sessionId, question: q, email, productSlug, childName }),
       });
       const data = await res.json();
 

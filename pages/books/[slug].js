@@ -149,13 +149,26 @@ export default function BookPage({ product }) {
   const [hasPaid, setHasPaid]         = useState(false);
   const [initialEmail, setInitialEmail] = useState('');
   const [openFaq, setOpenFaq]         = useState(null);
+  const [childPlans, setChildPlans]   = useState([]);   // [{child_name, updated_at}]
+  const [activeChild, setActiveChild] = useState('');   // selected child_name
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
     if (p.get('session_id') && p.get('email')) {
       setHasPaid(true);
-      setInitialEmail(decodeURIComponent(p.get('email')));
+      const em = decodeURIComponent(p.get('email'));
+      setInitialEmail(em);
+      // Load child plans for this email
+      fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`)
+        .then(r => r.json())
+        .then(json => {
+          if (json.plans?.length) {
+            setChildPlans(json.plans);
+            setActiveChild(json.plans[0].child_name || '');
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -209,9 +222,10 @@ export default function BookPage({ product }) {
           Most education systems are designed for the average child. Yours is not average. Will Meier&apos;s book and AI coaching companion help you see your child clearly — and build a real strategy around who they actually are.
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-          <a href="#purchase" style={{ background: GOLD, color: NAVY, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none', letterSpacing: '0.02em' }}>
+          <button onClick={() => document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' })}
+            style={{ background: GOLD, color: NAVY, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', border: 'none', cursor: 'pointer', letterSpacing: '0.02em' }}>
             Get {product.daysAccess}-Day Access — {price}
-          </a>
+          </button>
           <DownloadGate dark label="Free Planning Template" />
         </div>
         <p style={{ fontSize: '0.78rem', color: 'rgba(253,248,240,0.35)' }}>One-time payment. Secure checkout via Stripe. Access begins immediately.</p>
@@ -532,11 +546,37 @@ export default function BookPage({ product }) {
           <DownloadGate dark label="Download Template" />
         </div>
 
+        {/* Child selector — shown when email has multiple plans */}
+        {childPlans.length > 0 && (
+          <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.07)', border: '1px solid rgba(200,169,81,0.25)', borderRadius: 10, padding: '0.9rem 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ color: GOLD, fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap' }}>Coaching for:</span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+              {childPlans.map(p => (
+                <button key={p.child_name}
+                  onClick={() => setActiveChild(p.child_name)}
+                  style={{
+                    background: activeChild === p.child_name ? GOLD : 'rgba(255,255,255,0.07)',
+                    color: activeChild === p.child_name ? NAVY : 'rgba(253,248,240,0.7)',
+                    border: `1px solid ${activeChild === p.child_name ? GOLD : 'rgba(200,169,81,0.25)'}`,
+                    borderRadius: 20, padding: '5px 14px', fontSize: '0.82rem',
+                    fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}>
+                  {p.child_name || 'Unnamed child'}
+                </button>
+              ))}
+              <a href="/books/diagnostic" style={{ color: 'rgba(253,248,240,0.45)', fontSize: '0.78rem', textDecoration: 'underline', alignSelf: 'center', marginLeft: 4 }}>
+                + Add another child
+              </a>
+            </div>
+          </div>
+        )}
+
         <div style={{ width: '100%', maxWidth: 640 }}>
           <ProductChat
             productSlug={product.slug}
             product={product}
             initialEmail={hasPaid ? initialEmail : ''}
+            childName={activeChild}
           />
         </div>
       </section>
