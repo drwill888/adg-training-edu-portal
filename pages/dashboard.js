@@ -457,13 +457,13 @@ export default function Dashboard() {
                   <Button
                     onClick={() => window.location.href = '/called-to-carry/founders/apply'}
                     style={{ whiteSpace: "nowrap" }}>
-                    Apply — Founders Cohort $497 →
+                    Apply — Founders Cohort $997
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => window.location.href = '/called-to-carry/sprint/apply'}
                     style={{ whiteSpace: "nowrap" }}>
-                    Apply — 21-Day Sprint $997 →
+                    Apply — 21-Day Sprint $497
                   </Button>
                 </div>
               </Card>
