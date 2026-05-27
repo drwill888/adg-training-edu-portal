@@ -32,8 +32,10 @@ function Field({ name, label, value, onChange, rows = 3 }) {
           {label}
         </label>
       )}
+      {/* Screen: editable textarea */}
       <textarea
         ref={ref}
+        className="screen-field"
         rows={rows}
         value={value || ''}
         onChange={(e) => onChange(name, e.target.value)}
@@ -51,6 +53,19 @@ function Field({ name, label, value, onChange, rows = 3 }) {
         onFocus={e => e.target.style.borderColor = GOLD}
         onBlur={e => e.target.style.borderColor = '#d0d0d0'}
       />
+      {/* Print: plain text box — shows the filled value reliably across all browsers */}
+      <div
+        className="print-field"
+        style={{
+          border: `1px solid #bbb`, borderRadius: 6,
+          padding: '10px 12px', fontSize: '0.9rem',
+          lineHeight: 1.6, color: BODY, background: 'white',
+          minHeight: `${rows * 1.6 * 14 + 20}px`,
+          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+        }}
+      >
+        {value || ''}
+      </div>
     </div>
   );
 }
@@ -59,12 +74,18 @@ function Field({ name, label, value, onChange, rows = 3 }) {
 function Check({ name, label, checked, onChange }) {
   return (
     <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', marginBottom: 8, fontSize: '0.88rem', color: BODY, lineHeight: 1.5 }}>
+      {/* Screen checkbox */}
       <input
         type="checkbox"
+        className="screen-field"
         checked={!!checked}
         onChange={e => onChange(name, e.target.checked)}
         style={{ marginTop: 3, accentColor: NAVY, flexShrink: 0, width: 14, height: 14 }}
       />
+      {/* Print indicator */}
+      <span className="print-check" style={{ flexShrink: 0, marginTop: 2, fontSize: '0.95rem', lineHeight: 1 }}>
+        {checked ? '☑' : '☐'}
+      </span>
       {label}
     </label>
   );
@@ -95,25 +116,40 @@ function NumberedFields({ count, label, namePrefix, values, onChange }) {
   return (
     <div style={{ marginBottom: '1.25rem' }}>
       {label && <p style={{ fontSize: '0.9rem', color: BODY, fontWeight: 500, marginBottom: 10 }}>{label}</p>}
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
-          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: GOLD, marginTop: 10, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
-          <textarea
-            rows={2}
-            value={values?.[`${namePrefix}_${i + 1}`] || ''}
-            onChange={e => onChange(`${namePrefix}_${i + 1}`, e.target.value)}
-            style={{
-              flex: 1, border: `1px solid #d0d0d0`, borderRadius: 6,
-              padding: '8px 12px', fontSize: '0.9rem', fontFamily: 'inherit',
-              lineHeight: 1.6, color: BODY, background: FIELD_BG,
-              resize: 'none', overflow: 'hidden', minHeight: 52,
-            }}
-            onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
-            onFocus={e => e.target.style.borderColor = GOLD}
-            onBlur={e => e.target.style.borderColor = '#d0d0d0'}
-          />
-        </div>
-      ))}
+      {Array.from({ length: count }, (_, i) => {
+        const val = values?.[`${namePrefix}_${i + 1}`] || '';
+        return (
+          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: GOLD, marginTop: 10, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
+            {/* Screen */}
+            <textarea
+              className="screen-field"
+              rows={2}
+              value={val}
+              onChange={e => onChange(`${namePrefix}_${i + 1}`, e.target.value)}
+              style={{
+                flex: 1, border: `1px solid #d0d0d0`, borderRadius: 6,
+                padding: '8px 12px', fontSize: '0.9rem', fontFamily: 'inherit',
+                lineHeight: 1.6, color: BODY, background: FIELD_BG,
+                resize: 'none', overflow: 'hidden', minHeight: 52,
+              }}
+              onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+              onFocus={e => e.target.style.borderColor = GOLD}
+              onBlur={e => e.target.style.borderColor = '#d0d0d0'}
+            />
+            {/* Print */}
+            <div
+              className="print-field"
+              style={{
+                flex: 1, border: '1px solid #bbb', borderRadius: 6,
+                padding: '8px 12px', fontSize: '0.9rem', lineHeight: 1.6,
+                color: BODY, background: 'white', minHeight: 52,
+                whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              }}
+            >{val}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -190,6 +226,7 @@ function MITable({ values, onChange }) {
               <td style={{ padding: '8px 10px', fontSize: '0.83rem', color: BODY }}>{intel}</td>
               <td style={{ padding: '6px 8px', minWidth: 80 }}>
                 <select
+                  className="screen-field"
                   value={values?.[`mi_rating_${i}`] || ''}
                   onChange={e => onChange(`mi_rating_${i}`, e.target.value)}
                   style={{ ...inputStyle, width: '100%' }}
@@ -197,15 +234,18 @@ function MITable({ values, onChange }) {
                   <option value="">—</option>
                   {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
+                <span className="print-field" style={{ fontSize: '0.85rem', fontWeight: 700 }}>{values?.[`mi_rating_${i}`] || '—'}</span>
               </td>
               <td style={{ padding: '6px 8px' }}>
                 <input
                   type="text"
+                  className="screen-field"
                   value={values?.[`mi_notes_${i}`] || ''}
                   onChange={e => onChange(`mi_notes_${i}`, e.target.value)}
                   placeholder="Observed moment, habit, or unprompted choice…"
                   style={{ ...inputStyle }}
                 />
+                <span className="print-field" style={{ fontSize: '0.83rem' }}>{values?.[`mi_notes_${i}`] || ''}</span>
               </td>
             </tr>
           ))}
@@ -233,23 +273,38 @@ function ReviewTable({ values, onChange }) {
           {rows.map((row, i) => (
             <tr key={i} style={{ background: i % 2 === 0 ? '#eef2fa' : 'white', borderBottom: `1px solid ${RULE}` }}>
               <td style={{ padding: '8px 10px', fontWeight: 700, fontSize: '0.83rem', color: BODY, whiteSpace: 'nowrap' }}>{row}</td>
-              {cols.map(col => (
-                <td key={col} style={{ padding: '6px 8px', verticalAlign: 'top' }}>
-                  <textarea
-                    rows={2}
-                    value={values?.[`review_${i}_${col}`] || ''}
-                    onChange={e => onChange(`review_${i}_${col}`, e.target.value)}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      border: `1px solid #d0d0d0`, borderRadius: 4,
-                      padding: '5px 8px', fontSize: '0.82rem',
-                      fontFamily: 'inherit', color: BODY, background: '#fafafa',
-                      resize: 'none', overflow: 'hidden', minHeight: 52,
-                    }}
-                    onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
-                  />
-                </td>
-              ))}
+              {cols.map(col => {
+                const rv = values?.[`review_${i}_${col}`] || '';
+                return (
+                  <td key={col} style={{ padding: '6px 8px', verticalAlign: 'top' }}>
+                    {/* Screen */}
+                    <textarea
+                      className="screen-field"
+                      rows={2}
+                      value={rv}
+                      onChange={e => onChange(`review_${i}_${col}`, e.target.value)}
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        border: `1px solid #d0d0d0`, borderRadius: 4,
+                        padding: '5px 8px', fontSize: '0.82rem',
+                        fontFamily: 'inherit', color: BODY, background: '#fafafa',
+                        resize: 'none', overflow: 'hidden', minHeight: 52,
+                      }}
+                      onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                    />
+                    {/* Print */}
+                    <div
+                      className="print-field"
+                      style={{
+                        border: '1px solid #bbb', borderRadius: 4,
+                        padding: '5px 8px', fontSize: '0.82rem',
+                        color: BODY, background: 'white', minHeight: 52,
+                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                      }}
+                    >{rv}</div>
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -372,14 +427,20 @@ export default function DiagnosticPage() {
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
         <style>{`
           @media print {
-            .no-print { display: none !important; }
+            .no-print    { display: none !important; }
+            .screen-field { display: none !important; }
+            .print-field  { display: block !important; }
+            .print-check  { display: inline-block !important; }
             body { margin: 0; }
             .print-page { max-width: 100% !important; padding: 0.5in 0.75in !important; }
-            textarea, input, select { border: 1px solid #ccc !important; background: white !important; }
-            textarea { overflow: visible !important; }
-            h2, p { orphans: 3; widows: 3; }
+            select { border: 1px solid #ccc !important; background: white !important; }
+            h2, p, div { orphans: 3; widows: 3; }
             .section-block { page-break-inside: avoid; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; }
           }
+          .print-field { display: none; }
+          .print-check  { display: none; }
           * { box-sizing: border-box; }
           textarea:focus, input:focus, select:focus { outline: none; }
         `}</style>
@@ -396,18 +457,21 @@ export default function DiagnosticPage() {
           {cloudStatus === 'saved'   && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Saved</span>}
           {cloudStatus === 'loaded'  && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Plan loaded</span>}
           {cloudStatus === 'error'   && <span style={{ color: '#f87171', fontSize: '0.78rem' }}>Save failed</span>}
-          <
+          <a
             href="/child-strategic-plan.pdf"
             download
             style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '6px 14px' }}
           >
-            ↓ Download blank PDF
+            ↓ Blank PDF template
           </a>
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              // Ensure all table inputs have print siblings updated, then print
+              window.print();
+            }}
             style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 6, padding: '8px 20px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            Print / Save as PDF
+            🖨 Save Filled Form as PDF
           </button>
         </div>
       </div>
