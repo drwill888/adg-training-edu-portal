@@ -29,16 +29,8 @@ function DownloadGate({ dark, label = 'Download Free' }) {
       });
     } catch (_) {}
 
-    // 1. Trigger the PDF download immediately
-    const link = document.createElement('a');
-    link.href = '/child-strategic-plan.pdf';
-    link.download = 'Child-Strategic-Plan-Diagnostic.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // 2. Redirect to the fillable HTML form after a short delay
-    setTimeout(() => { window.location.href = '/books/diagnostic'; }, 1800);
+    // Redirect to the fillable HTML diagnostic form with email pre-filled
+    window.location.href = `/books/diagnostic?email=${encodeURIComponent(email.trim().toLowerCase())}`;
   }
 
   const inputStyle = {
