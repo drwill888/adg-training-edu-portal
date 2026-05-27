@@ -250,22 +250,22 @@ export default function BookPage({ product }) {
             There is a gap between information and formation — between teaching a child facts and building who they are. Most systems were built to close the information gap. Almost none were built for the formation gap. That is what this book addresses.
           </p>
           <p style={{ fontSize: '1.05rem', color: '#1f2937', lineHeight: 1.9, marginBottom: '1.25rem' }}>
-            Will Meier spent years watching children — and adults — who had been schooled but not formed. Credentialed but not called. Productive but not purposeful. The question that drove the book was simple: <em>What would it look like to build an education strategy around your specific child — their wiring, their gifts, their calling — instead of fitting them into someone else&apos;s mold?</em>
+            Will and Donna Meier spent years watching children — and adults — who had been schooled but not formed. Credentialed but not called. Productive but not purposeful. The question that drove the book was simple: <em>What would it look like to build an education strategy around your specific child — their wiring, their gifts, their calling — instead of fitting them into someone else&apos;s mold?</em>
           </p>
           <p style={{ fontSize: '1.05rem', color: '#1f2937', lineHeight: 1.9, marginBottom: '2.5rem' }}>
             The answer is nine practical frameworks for parents and leaders — not theory, not criticism of schools, but a way of seeing your child clearly and building something real around what you find.
           </p>
 
-          {/* Will bio */}
+          {/* Will & Donna bio */}
           <div style={{ background: WHITE, border: `1px solid rgba(200,169,81,0.25)`, borderRadius: 14, padding: '1.75rem', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
             <div style={{ width: 52, height: 52, borderRadius: '50%', background: NAVY, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: GOLD, fontWeight: 700, fontSize: 18 }}>W</span>
+              <span style={{ color: GOLD, fontWeight: 700, fontSize: 15 }}>W&D</span>
             </div>
             <div>
-              <p style={{ fontWeight: 700, color: NAVY, fontSize: '0.95rem', marginBottom: 4 }}>Will Meier</p>
-              <p style={{ fontSize: '0.82rem', color: GOLD, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Outfit, sans-serif' }}>Author · Founder, Awakening Destiny Global</p>
+              <p style={{ fontWeight: 700, color: NAVY, fontSize: '0.95rem', marginBottom: 4 }}>Will &amp; Donna Meier</p>
+              <p style={{ fontSize: '0.82rem', color: GOLD, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Outfit, sans-serif' }}>Authors · Founders, Awakening Destiny Global</p>
               <p style={{ fontSize: '0.9rem', color: '#374151', lineHeight: 1.75, margin: 0 }}>
-                Will has spent more than a decade helping parents, leaders, and organizations think clearly about formation, calling, and development. His work lives at the intersection of Kingdom purpose and practical strategy — helping people stop managing defaults and start building with intention.
+                Will and Donna have spent more than a decade helping parents, leaders, and organizations think clearly about formation, calling, and development. Their work lives at the intersection of Kingdom purpose and practical strategy — helping people stop managing defaults and start building with intention.
               </p>
             </div>
           </div>
