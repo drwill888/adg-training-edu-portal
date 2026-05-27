@@ -1,7 +1,6 @@
 // pages/books/diagnostic.js
 // Fillable HTML version of the Child Strategic Plan Diagnostic.
-// Auto-expanding textareas, full branding, Print → Save as PDF button.
-// Answers saved to localStorage so the user doesn't lose work.
+// Auto-expanding textareas, cloud save/load by email, AI summary (paid).
 
 import Head from 'next/head';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,6 +12,7 @@ const BODY  = '#2d2d2d';
 const RULE  = '#e0e0e0';
 const FIELD_BG = '#f9f9f9';
 const STORAGE_KEY = 'ezra-edu-diagnostic-v1';
+const PRODUCT_SLUG = 'child-education';
 
 // ─── Auto-resize textarea ───────────────────────────────────────────────────
 function Field({ name, label, value, onChange, rows = 3 }) {
@@ -260,29 +260,102 @@ function ReviewTable({ values, onChange }) {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function DiagnosticPage() {
-  const [values, setValues] = useState({});
-  const [saved, setSaved]   = useState(false);
+  const [values, setValues]             = useState({});
+  const [saveEmail, setSaveEmail]       = useState('');
+  const [cloudStatus, setCloudStatus]   = useState(''); // 'saving' | 'saved' | 'loaded' | 'error'
+  const [summary, setSummary]           = useState('');
+  const [summaryLoading, setSumLoading] = useState(false);
+  const [summaryBlocked, setSumBlocked] = useState(false);
+  const [summaryError, setSumError]     = useState('');
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setValues(JSON.parse(stored));
+      const storedEmail = localStorage.getItem(STORAGE_KEY + '_email');
+      if (storedEmail) setSaveEmail(storedEmail);
     } catch (_) {}
   }, []);
 
-  // Debounced save to localStorage
+  // Load from cloud when email is entered
+  const loadFromCloud = useCallback(async (email) => {
+    if (!email || !email.includes('@')) return;
+    try {
+      const res = await fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(email)}&productSlug=${PRODUCT_SLUG}`);
+      const json = await res.json();
+      if (json.data) {
+        setValues(json.data);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch (_) {}
+        if (json.summary) setSummary(json.summary);
+        setCloudStatus('loaded');
+        setTimeout(() => setCloudStatus(''), 3000);
+      }
+    } catch (_) {}
+  }, []);
+
+  // Debounced save to localStorage + cloud
   const saveTimer = useRef(null);
   const handleChange = useCallback((name, val) => {
     setValues(prev => {
       const next = { ...prev, [name]: val };
       clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSaved(true); setTimeout(() => setSaved(false), 2000); } catch (_) {}
-      }, 800);
+      saveTimer.current = setTimeout(async () => {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (_) {}
+        const email = localStorage.getItem(STORAGE_KEY + '_email');
+        if (email && email.includes('@')) {
+          setCloudStatus('saving');
+          try {
+            await fetch('/api/books/diagnostic/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, productSlug: PRODUCT_SLUG, data: next }),
+            });
+            setCloudStatus('saved');
+            setTimeout(() => setCloudStatus(''), 2500);
+          } catch (_) { setCloudStatus('error'); }
+        }
+      }, 1200);
       return next;
     });
   }, []);
+
+  async function handleEmailSave(email) {
+    setSaveEmail(email);
+    try { localStorage.setItem(STORAGE_KEY + '_email', email); } catch (_) {}
+    if (email && email.includes('@')) {
+      await loadFromCloud(email);
+    }
+  }
+
+  async function generateSummary() {
+    if (!saveEmail || !saveEmail.includes('@')) {
+      setSumError('Enter your email above first so we know who you are.');
+      return;
+    }
+    setSumLoading(true);
+    setSumBlocked(false);
+    setSumError('');
+    try {
+      const res = await fetch('/api/books/diagnostic/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: saveEmail, productSlug: PRODUCT_SLUG, data: values }),
+      });
+      const json = await res.json();
+      if (json.blocked) {
+        setSumBlocked(true);
+      } else if (json.summary) {
+        setSummary(json.summary);
+      } else {
+        setSumError('Something went wrong. Please try again.');
+      }
+    } catch (_) {
+      setSumError('Something went wrong. Please try again.');
+    } finally {
+      setSumLoading(false);
+    }
+  }
 
   const F = (name, label, rows) => <Field name={name} label={label} value={values[name]} onChange={handleChange} rows={rows || 3} />;
   const CB = (name, label) => <Check name={name} label={label} checked={values[name]} onChange={handleChange} />;
@@ -319,8 +392,11 @@ export default function DiagnosticPage() {
           <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>Child Strategic Plan Diagnostic</span>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          {saved && <span style={{ color: GOLD, fontSize: '0.78rem', opacity: 0.9 }}>✓ Saved</span>}
-          <a
+          {cloudStatus === 'saving'  && <span style={{ color: 'rgba(200,164,90,0.7)', fontSize: '0.78rem' }}>Saving…</span>}
+          {cloudStatus === 'saved'   && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Saved</span>}
+          {cloudStatus === 'loaded'  && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Plan loaded</span>}
+          {cloudStatus === 'error'   && <span style={{ color: '#f87171', fontSize: '0.78rem' }}>Save failed</span>}
+          <
             href="/child-strategic-plan.pdf"
             download
             style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '6px 14px' }}
@@ -347,6 +423,30 @@ export default function DiagnosticPage() {
           </h1>
           <p style={{ fontSize: '0.88rem', color: '#555', marginBottom: 4 }}>A formation-based equipping plan grounded in the nine enhancements</p>
           <p style={{ fontSize: '0.82rem', color: '#888' }}>Companion to <em>How We Educate Children and Develop Talent</em> · Will &amp; Donna Meier</p>
+        </div>
+
+        {/* ── Cloud save banner ── */}
+        <div className="no-print" style={{ background: '#eef2fa', border: `1px solid rgba(30,42,74,0.15)`, borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '2rem', display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: NAVY, marginBottom: 2 }}>💾 Save &amp; sync your plan</p>
+            <p style={{ fontSize: '0.78rem', color: '#555', margin: 0 }}>Enter your email to save your answers and pick up from any device.</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={saveEmail}
+              onChange={e => setSaveEmail(e.target.value)}
+              onBlur={e => handleEmailSave(e.target.value)}
+              style={{ border: '1px solid #c8c8c8', borderRadius: 6, padding: '8px 12px', fontSize: '0.85rem', outline: 'none', minWidth: 220, color: NAVY }}
+            />
+            <button
+              onClick={() => handleEmailSave(saveEmail)}
+              style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              {cloudStatus === 'loaded' ? '✓ Loaded' : 'Load / Save'}
+            </button>
+          </div>
         </div>
 
         {/* How to Use */}
@@ -539,8 +639,53 @@ export default function DiagnosticPage() {
           {F('ezra_notes', 'Notes from coaching with Ezra Edu (patterns, insights, things to track):', 6)}
         </div>
 
+        {/* ── AI Summary ── */}
+        <div style={{ borderTop: `2px solid ${NAVY}`, paddingTop: '2rem', marginBottom: '2.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <p style={{ color: GOLD, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: 6, fontFamily: 'Outfit, sans-serif' }}>Paid Feature</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.6rem', fontWeight: 600, color: NAVY, marginBottom: 8 }}>Your Child&apos;s Profile Summary</h2>
+            <p style={{ fontSize: '0.88rem', color: '#555', maxWidth: 520, margin: '0 auto 1.5rem', lineHeight: 1.7 }}>
+              Ezra reads everything you&apos;ve entered and writes a personalized 5–7 paragraph profile of your child — who they are, how they learn, what their heart needs, and who they&apos;re becoming. Available with your {'{'}60{'}'}-day coaching access.
+            </p>
+
+            {/* Already have a summary */}
+            {summary && !summaryLoading && (
+              <div style={{ background: '#f5f0e8', border: `1px solid rgba(200,164,90,0.35)`, borderRadius: 12, padding: '1.75rem 2rem', textAlign: 'left', marginBottom: '1.25rem', maxWidth: 680, margin: '0 auto 1.25rem' }}>
+                <p style={{ color: GOLD, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12, fontFamily: 'Outfit, sans-serif' }}>✦ Ezra&apos;s Profile Summary</p>
+                {summary.split('\n\n').map((para, i) => (
+                  <p key={i} style={{ fontSize: '0.92rem', color: BODY, lineHeight: 1.85, marginBottom: i < summary.split('\n\n').length - 1 ? '1rem' : 0 }}>{para}</p>
+                ))}
+              </div>
+            )}
+
+            {/* Generate / regenerate button */}
+            {!summaryBlocked && (
+              <button
+                onClick={generateSummary}
+                disabled={summaryLoading}
+                style={{ background: summary ? 'transparent' : NAVY, color: summary ? NAVY : GOLD, border: `2px solid ${NAVY}`, borderRadius: 8, padding: '13px 32px', fontWeight: 700, fontSize: '0.95rem', cursor: summaryLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: summaryLoading ? 0.7 : 1 }}
+              >
+                {summaryLoading ? 'Ezra is reading your answers…' : summary ? '↺ Regenerate Summary' : '✦ Generate My Child\'s Summary'}
+              </button>
+            )}
+
+            {/* Blocked — needs purchase */}
+            {summaryBlocked && (
+              <div style={{ background: '#fff8ee', border: `1px solid rgba(200,164,90,0.4)`, borderRadius: 10, padding: '1.25rem 1.5rem', maxWidth: 480, margin: '0 auto' }}>
+                <p style={{ fontWeight: 700, color: NAVY, marginBottom: 6, fontSize: '0.95rem' }}>This feature requires coaching access.</p>
+                <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: 14, lineHeight: 1.6 }}>Purchase 60-day Ezra access to unlock your child&apos;s personalized profile summary and full AI coaching.</p>
+                <a href="/books/child-education#purchase" style={{ display: 'inline-block', background: NAVY, color: GOLD, padding: '10px 24px', borderRadius: 7, fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none' }}>
+                  💳 Get Access — $19.99
+                </a>
+              </div>
+            )}
+
+            {summaryError && <p style={{ color: '#ef4444', fontSize: '0.82rem', marginTop: 10 }}>{summaryError}</p>}
+          </div>
+        </div>
+
         {/* Close */}
-        <div style={{ borderTop: `2px solid ${NAVY}`, paddingTop: '2rem', textAlign: 'center' }}>
+        <div style={{ borderTop: `1px solid ${RULE}`, paddingTop: '2rem', textAlign: 'center' }}>
           <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.1rem', color: NAVY, fontWeight: 600, marginBottom: 8 }}>Continue with Ezra Edu</p>
           <p style={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 1rem' }}>
             Once you have completed this diagnostic, bring it into Ezra Edu and ask it to walk through the plan with you. Ezra will coach you through each enhancement, help you find what you cannot yet see, and adapt the plan as your child grows.
