@@ -153,9 +153,9 @@ export default async function handler(req, res) {
         addToIcegramList({
           email,
           config: {
-            formPageUrl: process.env.ICEGRAM_FORM_PAGE_URL,
+            formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL,
             listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
-            formId:      process.env.ICEGRAM_FORM_ID || '10',
+            formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',
           },
         }).then(r => console.log('[webhook] Icegram EDU capture:', JSON.stringify(r).slice(0, 120)))
           .catch(e => console.warn('[webhook] Icegram EDU capture failed:', e.message));

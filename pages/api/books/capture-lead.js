@@ -13,14 +13,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Edu list config.
-// Since ICEGRAM_EDU_FORM_PAGE_URL currently 404s, we use the coach form page
-// (which works) to obtain a valid nonce, but submit to the EDU list hash.
-// Using form ID 10 (coach) because form 11 is not yet published as a WP page.
+// Edu list config — uses the dedicated EDU form (form 11) and its WordPress page.
 const EDU_CONFIG = {
-  formPageUrl: process.env.ICEGRAM_FORM_PAGE_URL,           // coach page — known to work
-  listHash:    process.env.ICEGRAM_EDU_LIST_HASH,           // EDU list hash
-  formId:      process.env.ICEGRAM_FORM_ID || '10',         // coach form ID (page that works)
+  formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL,       // EDU form page (form 11)
+  listHash:    process.env.ICEGRAM_EDU_LIST_HASH,            // EDU list hash
+  formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',     // EDU form ID
 };
 
 export default async function handler(req, res) {
@@ -46,7 +43,7 @@ export default async function handler(req, res) {
 
   // ── 2. Icegram via form submission (no API key needed) ────────────────────
   if (!EDU_CONFIG.formPageUrl || !EDU_CONFIG.listHash) {
-    console.warn('[edu-capture] ICEGRAM_EDU_FORM_PAGE_URL or ICEGRAM_EDU_LIST_HASH not set — skipping Icegram');
+    console.warn('[edu-capture] ICEGRAM_EDU_FORM_PAGE_URL or ICEGRAM_EDU_LIST_HASH not set — skipping Icegram. formPageUrl:', EDU_CONFIG.formPageUrl, 'listHash:', EDU_CONFIG.listHash ? 'set' : 'missing');
     return res.status(200).json({ ok: true, icegram: { ok: false, reason: 'not_configured' } });
   }
 
