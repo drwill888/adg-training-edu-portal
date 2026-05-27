@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { buffer } from 'micro';
 import { Resend } from 'resend';
+import { addToIcegramList } from '@/lib/coach/icegram';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -146,8 +147,19 @@ export default async function handler(req, res) {
         }
       }
 
-      // Product subscriber — send welcome email with access link
+      // Product subscriber — add to Icegram EDU list + send welcome email
       if (tier === 'product_subscriber' && productSlug) {
+        // Add buyer to Icegram EDU list (fire and forget — never block the webhook)
+        addToIcegramList({
+          email,
+          config: {
+            formPageUrl: process.env.ICEGRAM_FORM_PAGE_URL,
+            listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
+            formId:      process.env.ICEGRAM_FORM_ID || '10',
+          },
+        }).then(r => console.log('[webhook] Icegram EDU capture:', JSON.stringify(r).slice(0, 120)))
+          .catch(e => console.warn('[webhook] Icegram EDU capture failed:', e.message));
+
         try {
           const fromEmail = process.env.RESEND_FROM_EMAIL || 'will@awakeningdestiny.global';
           await resend.emails.send({
