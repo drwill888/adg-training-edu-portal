@@ -117,8 +117,8 @@ const FAQ_ITEMS = [
     a: 'Up to 10 per day for 60 days — that is up to 600 total coaching exchanges. Each one is a real back-and-forth with Ezra: you ask about your specific child and situation, Ezra responds with practical, grounded coaching from the book\'s frameworks. No limits on response length — only on the number of exchanges per day.',
   },
   {
-    q: 'What\'s exactly included in the $20?',
-    a: 'Two things: (1) the Child Strategic Plan Diagnostic — a fillable PDF planning template you download and keep forever, and (2) 60 days of access to Ezra, your AI coaching companion. After your 60 days, the template is still yours. You can purchase another 60-day window anytime you want to continue.',
+    q: 'What does the $19.99 get me?',
+    a: '60 days of access to Ezra — your AI coaching companion trained on the full book. Up to 10 coaching conversations per day. The Child Strategic Plan Diagnostic template is free and separate — download it any time without purchasing. After your 60 days you can purchase another window anytime.',
   },
   {
     q: 'Can I re-download the template after purchasing?',
@@ -555,7 +555,7 @@ export default function BookPage({ product }) {
           {product.daysAccess} days. {product.dailyLimit} conversations a day. {price}.
         </p>
         <p style={{ color: 'rgba(2,26,53,0.55)', marginBottom: '2.5rem', fontSize: '0.88rem' }}>
-          Plus your free Child Strategic Plan Diagnostic — no purchase needed to download it.
+          One-time payment. No subscription. Access starts immediately.
         </p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="#purchase" style={{ background: NAVY, color: GOLD, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none' }}>
