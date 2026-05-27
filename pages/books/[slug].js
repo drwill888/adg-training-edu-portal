@@ -1,9 +1,84 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { getProduct, getAllSlugs } from '@/lib/products/registry';
 
 const ProductChat = dynamic(() => import('../../components/ProductChat'), { ssr: false });
+
+// ── Download Gate ─────────────────────────────────────────────────────────────
+// Shows a name + email form, submits to /api/books/capture-lead,
+// then triggers the PDF download automatically.
+function DownloadGate({ dark, label = 'Download Free' }) {
+  const [open, setOpen]         = useState(false);
+  const [firstName, setFirst]   = useState('');
+  const [lastName, setLast]     = useState('');
+  const [email, setEmail]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [done, setDone]         = useState(false);
+  const linkRef                 = useRef(null);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    try {
+      await fetch('/api/books/capture-lead', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ firstName, lastName, email }),
+      });
+    } catch (_) {}
+    // Always trigger download regardless of API result
+    setDone(true);
+    setLoading(false);
+    setTimeout(() => linkRef.current?.click(), 100);
+  }
+
+  const inputStyle = {
+    border: `1px solid ${dark ? 'rgba(200,169,81,0.3)' : '#d1d5db'}`,
+    borderRadius: 7, padding: '10px 13px', fontSize: 14,
+    outline: 'none', width: '100%',
+    color: dark ? '#fff' : '#021A35',
+    background: dark ? 'rgba(255,255,255,0.07)' : '#fff',
+  };
+
+  if (done) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <span style={{ color: GOLD, fontSize: 20 }}>✓</span>
+      <span style={{ color: dark ? 'rgba(253,248,240,0.7)' : GRAY, fontSize: '0.85rem' }}>
+        Your download should start automatically.{' '}
+        <a ref={linkRef} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
+          style={{ color: GOLD, fontWeight: 600 }}>Click here</a> if it doesn&apos;t.
+      </span>
+      {/* Hidden auto-trigger link */}
+      <a ref={done ? linkRef : null} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf" style={{ display: 'none' }} aria-hidden />
+    </div>
+  );
+
+  if (!open) return (
+    <button onClick={() => setOpen(true)}
+      style={{ background: GOLD, color: NAVY, padding: '10px 22px', borderRadius: 8, fontWeight: 700, fontSize: '0.88rem', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      📋 {label}
+    </button>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 9, width: '100%', maxWidth: 360 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input placeholder="First name" value={firstName} onChange={e => setFirst(e.target.value)} required style={inputStyle} />
+        <input placeholder="Last name"  value={lastName}  onChange={e => setLast(e.target.value)}  style={inputStyle} />
+      </div>
+      <input type="email" placeholder="Your email address" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
+      <button type="submit" disabled={loading || !email.trim()}
+        style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 7, padding: '11px 0', fontWeight: 700, fontSize: '0.9rem', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+        {loading ? 'One moment…' : '↓ Send me the template'}
+      </button>
+      <p style={{ fontSize: '0.72rem', color: dark ? 'rgba(253,248,240,0.35)' : '#9ca3af', margin: 0, lineHeight: 1.5 }}>
+        We&apos;ll add you to Will&apos;s Ezra Edu list. No spam. Unsubscribe any time.
+      </p>
+    </form>
+  );
+}
 
 const NAVY  = '#021A35';
 const GOLD  = '#C8A951';
@@ -109,7 +184,7 @@ export default function BookPage({ product }) {
         <span style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.6)' }}>Already purchased access?</span>
         <a href="#my-session" style={{ fontSize: '0.8rem', color: GOLD, fontWeight: 600, textDecoration: 'none' }}>Open your session →</a>
         <span style={{ color: 'rgba(255,255,255,0.2)', margin: '0 4px' }}>|</span>
-        <a href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf" style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.55)', textDecoration: 'none' }}>📋 Download your free template</a>
+        <span style={{ fontSize: '0.8rem', color: 'rgba(253,248,240,0.55)' }}>📋 <a href="#my-session" style={{ color: 'rgba(253,248,240,0.55)', textDecoration: 'underline' }}>Get free template ↓</a></span>
       </div>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -127,10 +202,7 @@ export default function BookPage({ product }) {
           <a href="#purchase" style={{ background: GOLD, color: NAVY, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none', letterSpacing: '0.02em' }}>
             Get {product.daysAccess}-Day Access — {price} →
           </a>
-          <a href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
-            style={{ background: 'transparent', color: GOLD, padding: '16px 28px', borderRadius: 8, fontWeight: 600, fontSize: '0.95rem', textDecoration: 'none', border: `1px solid rgba(200,169,81,0.4)` }}>
-            📋 Free Planning Template
-          </a>
+          <DownloadGate dark label="📋 Free Planning Template" />
         </div>
         <p style={{ fontSize: '0.78rem', color: 'rgba(253,248,240,0.35)' }}>One-time payment. Secure checkout via Stripe. Access begins immediately.</p>
       </section>
@@ -276,10 +348,9 @@ export default function BookPage({ product }) {
                   </li>
                 ))}
               </ul>
-              <a href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
-                style={{ marginTop: 'auto', display: 'block', background: GOLD, color: NAVY, padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' }}>
-                ↓ Download Free Now
-              </a>
+              <div style={{ marginTop: 'auto' }}>
+                <DownloadGate dark label="↓ Download Free Now" />
+              </div>
             </div>
             {/* Ezra */}
             <div style={{ background: WHITE, border: `2px solid rgba(200,169,81,0.3)`, borderRadius: 16, padding: '2rem', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -423,10 +494,7 @@ export default function BookPage({ product }) {
               <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Your free fillable PDF planning template</p>
             </div>
           </div>
-          <a href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
-            style={{ background: GOLD, color: NAVY, padding: '9px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            ↓ Download
-          </a>
+          <DownloadGate dark label="↓ Download" />
         </div>
 
         <div style={{ width: '100%', maxWidth: 640 }}>
@@ -478,10 +546,7 @@ export default function BookPage({ product }) {
           <a href="#purchase" style={{ background: NAVY, color: GOLD, padding: '16px 36px', borderRadius: 8, fontWeight: 700, fontSize: '1rem', textDecoration: 'none' }}>
             Get Access Now →
           </a>
-          <a href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
-            style={{ background: 'transparent', color: NAVY, padding: '16px 28px', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', border: `2px solid ${NAVY}` }}>
-            ↓ Free Template
-          </a>
+          <DownloadGate dark={false} label="📋 Free Template" />
         </div>
       </section>
     </>
