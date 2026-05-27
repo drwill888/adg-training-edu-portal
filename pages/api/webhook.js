@@ -153,7 +153,7 @@ export default async function handler(req, res) {
         addToIcegramList({
           email,
           config: {
-            formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL,
+            formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL || process.env.ICEGRAM_FORM_PAGE_URL,
             listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
             formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',
           },

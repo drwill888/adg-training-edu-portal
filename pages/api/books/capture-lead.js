@@ -13,11 +13,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Edu list config — uses the dedicated EDU form (form 11) and its WordPress page.
+// EDU list config.
+// No dedicated WordPress page needed — WP nonces are site-wide.
+// We fetch the nonce from the coach page (known to work) and submit as form 11.
+// Icegram validates formId + listHash against its form config, not the page.
 const EDU_CONFIG = {
-  formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL,       // EDU form page (form 11)
-  listHash:    process.env.ICEGRAM_EDU_LIST_HASH,            // EDU list hash
-  formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',     // EDU form ID
+  formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL || process.env.ICEGRAM_FORM_PAGE_URL,
+  listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
+  formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',
 };
 
 export default async function handler(req, res) {
