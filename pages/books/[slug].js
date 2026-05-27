@@ -704,7 +704,7 @@ export default function BookPage({ product }) {
       </section>
 
       {/* ── Footer CTA ───────────────────────────────────────────────────── */}
-      <section style={{ background: GOLD, padding: '5rem 2rem', textAlign: 'center' }}>
+      <section style={{ background: GOLD, padding: '5rem 2rem', textAlign: 'center', display: hasPaid ? 'none' : 'block' }}>
         <p style={{ color: 'rgba(2,26,53,0.6)', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.7rem', marginBottom: '1.25rem', fontFamily: 'Outfit, sans-serif' }}>The window will not stay open forever.</p>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 400, color: NAVY, lineHeight: 1.15, maxWidth: 560, margin: '0 auto 1rem' }}>
           The investment in clarity is worth it.
