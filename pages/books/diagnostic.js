@@ -1,0 +1,577 @@
+// pages/books/diagnostic.js
+// Fillable HTML version of the Child Strategic Plan Diagnostic.
+// Auto-expanding textareas, full branding, Print → Save as PDF button.
+// Answers saved to localStorage so the user doesn't lose work.
+
+import Head from 'next/head';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+const NAVY = '#1e2a4a';
+const GOLD = '#c8a45a';
+const CREAM = '#fdf8f0';
+const BODY  = '#2d2d2d';
+const RULE  = '#e0e0e0';
+const FIELD_BG = '#f9f9f9';
+const STORAGE_KEY = 'ezra-edu-diagnostic-v1';
+
+// ─── Auto-resize textarea ───────────────────────────────────────────────────
+function Field({ name, label, value, onChange, rows = 3 }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = ref.current.scrollHeight + 'px';
+    }
+  }, [value]);
+
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      {label && (
+        <label style={{ display: 'block', fontSize: '0.9rem', color: BODY, fontWeight: 500, marginBottom: 6, lineHeight: 1.5 }}>
+          {label}
+        </label>
+      )}
+      <textarea
+        ref={ref}
+        rows={rows}
+        value={value || ''}
+        onChange={(e) => onChange(name, e.target.value)}
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          border: `1px solid #d0d0d0`, borderRadius: 6,
+          padding: '10px 12px', fontSize: '0.9rem',
+          fontFamily: 'inherit', lineHeight: 1.6,
+          color: BODY, background: FIELD_BG,
+          resize: 'none', overflow: 'hidden',
+          minHeight: `${rows * 1.6 * 14 + 20}px`,
+          transition: 'border-color 0.15s',
+          outline: 'none',
+        }}
+        onFocus={e => e.target.style.borderColor = GOLD}
+        onBlur={e => e.target.style.borderColor = '#d0d0d0'}
+      />
+    </div>
+  );
+}
+
+// ─── Checkbox ───────────────────────────────────────────────────────────────
+function Check({ name, label, checked, onChange }) {
+  return (
+    <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', marginBottom: 8, fontSize: '0.88rem', color: BODY, lineHeight: 1.5 }}>
+      <input
+        type="checkbox"
+        checked={!!checked}
+        onChange={e => onChange(name, e.target.checked)}
+        style={{ marginTop: 3, accentColor: NAVY, flexShrink: 0, width: 14, height: 14 }}
+      />
+      {label}
+    </label>
+  );
+}
+
+// ─── Inline checkbox group ───────────────────────────────────────────────────
+function CheckGroup({ prefix, options, values, onChange, namePrefix }) {
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      {prefix && <p style={{ fontSize: '0.9rem', color: BODY, fontWeight: 500, marginBottom: 8 }}>{prefix}</p>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px' }}>
+        {options.map(opt => (
+          <Check
+            key={opt}
+            name={`${namePrefix}_${opt}`}
+            label={opt}
+            checked={values?.[`${namePrefix}_${opt}`]}
+            onChange={onChange}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Numbered fields ─────────────────────────────────────────────────────────
+function NumberedFields({ count, label, namePrefix, values, onChange }) {
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      {label && <p style={{ fontSize: '0.9rem', color: BODY, fontWeight: 500, marginBottom: 10 }}>{label}</p>}
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
+          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: GOLD, marginTop: 10, flexShrink: 0, minWidth: 18 }}>{i + 1}.</span>
+          <textarea
+            rows={2}
+            value={values?.[`${namePrefix}_${i + 1}`] || ''}
+            onChange={e => onChange(`${namePrefix}_${i + 1}`, e.target.value)}
+            style={{
+              flex: 1, border: `1px solid #d0d0d0`, borderRadius: 6,
+              padding: '8px 12px', fontSize: '0.9rem', fontFamily: 'inherit',
+              lineHeight: 1.6, color: BODY, background: FIELD_BG,
+              resize: 'none', overflow: 'hidden', minHeight: 52,
+            }}
+            onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+            onFocus={e => e.target.style.borderColor = GOLD}
+            onBlur={e => e.target.style.borderColor = '#d0d0d0'}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Section header ──────────────────────────────────────────────────────────
+function SectionHeader({ num, title, tagline }) {
+  return (
+    <div style={{ marginBottom: '1.5rem', paddingTop: '1.5rem' }}>
+      <p style={{ color: GOLD, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: 4, fontFamily: 'Outfit, sans-serif' }}>
+        Section {num}
+      </p>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.5rem', fontWeight: 600, color: NAVY, marginBottom: tagline ? 4 : 0 }}>
+        {title}
+      </h2>
+      {tagline && <p style={{ fontSize: '0.85rem', color: GOLD, fontStyle: 'italic', margin: 0 }}>{tagline}</p>}
+      <div style={{ height: 1, background: NAVY, marginTop: 10 }} />
+    </div>
+  );
+}
+
+function H1({ children }) {
+  return (
+    <div style={{ marginBottom: '1.25rem', paddingTop: '1.25rem' }}>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.5rem', fontWeight: 600, color: NAVY, marginBottom: 6 }}>{children}</h2>
+      <div style={{ height: 1, background: NAVY }} />
+    </div>
+  );
+}
+
+function Body({ children, italic }) {
+  return (
+    <p style={{ fontSize: '0.9rem', color: BODY, lineHeight: 1.75, marginBottom: '1rem', fontStyle: italic ? 'italic' : 'normal' }}>
+      {children}
+    </p>
+  );
+}
+
+function Bold({ children }) {
+  return <p style={{ fontSize: '0.9rem', color: BODY, fontWeight: 700, marginBottom: 8 }}>{children}</p>;
+}
+
+// ─── MI Table ────────────────────────────────────────────────────────────────
+function MITable({ values, onChange }) {
+  const intelligences = [
+    'Linguistic (words, reading, writing)',
+    'Logical-Mathematical (patterns, reasoning)',
+    'Spatial (visual, design, navigation)',
+    'Bodily-Kinesthetic (movement, hands-on)',
+    'Musical (rhythm, melody, sound)',
+    'Interpersonal (reading people, leading)',
+    'Intrapersonal (self-awareness, reflection)',
+    'Naturalistic (living systems, environment)',
+  ];
+  const inputStyle = {
+    width: '100%', boxSizing: 'border-box',
+    border: `1px solid #d0d0d0`, borderRadius: 4,
+    padding: '6px 8px', fontSize: '0.82rem',
+    fontFamily: 'inherit', color: BODY, background: FIELD_BG,
+    outline: 'none',
+  };
+  return (
+    <div style={{ marginBottom: '1.5rem', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+        <thead>
+          <tr style={{ background: NAVY }}>
+            {['Intelligence', 'Strength 1–5', 'Evidence / Notes'].map(h => (
+              <th key={h} style={{ color: 'white', textAlign: 'left', padding: '8px 10px', fontWeight: 600, fontSize: '0.8rem' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {intelligences.map((intel, i) => (
+            <tr key={i} style={{ background: i % 2 === 0 ? '#eef2fa' : 'white', borderBottom: `1px solid ${RULE}` }}>
+              <td style={{ padding: '8px 10px', fontSize: '0.83rem', color: BODY }}>{intel}</td>
+              <td style={{ padding: '6px 8px', minWidth: 80 }}>
+                <select
+                  value={values?.[`mi_rating_${i}`] || ''}
+                  onChange={e => onChange(`mi_rating_${i}`, e.target.value)}
+                  style={{ ...inputStyle, width: '100%' }}
+                >
+                  <option value="">—</option>
+                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </td>
+              <td style={{ padding: '6px 8px' }}>
+                <input
+                  type="text"
+                  value={values?.[`mi_notes_${i}`] || ''}
+                  onChange={e => onChange(`mi_notes_${i}`, e.target.value)}
+                  placeholder="Observed moment, habit, or unprompted choice…"
+                  style={{ ...inputStyle }}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Review Table ────────────────────────────────────────────────────────────
+function ReviewTable({ values, onChange }) {
+  const rows = ['Month 1', 'Month 2', 'Month 3 — Plan Refresh'];
+  const cols = ["What's Working", "What's Not", 'Adjustment'];
+  return (
+    <div style={{ marginBottom: '1.5rem', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+        <thead>
+          <tr style={{ background: NAVY }}>
+            {['Checkpoint', ...cols].map(h => (
+              <th key={h} style={{ color: 'white', textAlign: 'left', padding: '8px 10px', fontWeight: 600, fontSize: '0.8rem' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} style={{ background: i % 2 === 0 ? '#eef2fa' : 'white', borderBottom: `1px solid ${RULE}` }}>
+              <td style={{ padding: '8px 10px', fontWeight: 700, fontSize: '0.83rem', color: BODY, whiteSpace: 'nowrap' }}>{row}</td>
+              {cols.map(col => (
+                <td key={col} style={{ padding: '6px 8px', verticalAlign: 'top' }}>
+                  <textarea
+                    rows={2}
+                    value={values?.[`review_${i}_${col}`] || ''}
+                    onChange={e => onChange(`review_${i}_${col}`, e.target.value)}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      border: `1px solid #d0d0d0`, borderRadius: 4,
+                      padding: '5px 8px', fontSize: '0.82rem',
+                      fontFamily: 'inherit', color: BODY, background: '#fafafa',
+                      resize: 'none', overflow: 'hidden', minHeight: 52,
+                    }}
+                    onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+export default function DiagnosticPage() {
+  const [values, setValues] = useState({});
+  const [saved, setSaved]   = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) setValues(JSON.parse(stored));
+    } catch (_) {}
+  }, []);
+
+  // Debounced save to localStorage
+  const saveTimer = useRef(null);
+  const handleChange = useCallback((name, val) => {
+    setValues(prev => {
+      const next = { ...prev, [name]: val };
+      clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setSaved(true); setTimeout(() => setSaved(false), 2000); } catch (_) {}
+      }, 800);
+      return next;
+    });
+  }, []);
+
+  const F = (name, label, rows) => <Field name={name} label={label} value={values[name]} onChange={handleChange} rows={rows || 3} />;
+  const CB = (name, label) => <Check name={name} label={label} checked={values[name]} onChange={handleChange} />;
+  const CG = (prefix, options, namePrefix) => <CheckGroup prefix={prefix} options={options} values={values} onChange={handleChange} namePrefix={namePrefix} />;
+  const NF = (count, label, namePrefix, rows) => <NumberedFields count={count} label={label} namePrefix={namePrefix} values={values} onChange={handleChange} />;
+
+  return (
+    <>
+      <Head>
+        <title>Child Strategic Plan Diagnostic — Ezra Edu</title>
+        <meta name="robots" content="noindex" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+        <style>{`
+          @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; }
+            .print-page { max-width: 100% !important; padding: 0.5in 0.75in !important; }
+            textarea, input, select { border: 1px solid #ccc !important; background: white !important; }
+            textarea { overflow: visible !important; }
+            h2, p { orphans: 3; widows: 3; }
+            .section-block { page-break-inside: avoid; }
+          }
+          * { box-sizing: border-box; }
+          textarea:focus, input:focus, select:focus { outline: none; }
+        `}</style>
+      </Head>
+
+      {/* ── Top bar ── */}
+      <div className="no-print" style={{ background: NAVY, padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ color: GOLD, fontWeight: 700, fontSize: '0.9rem', fontFamily: 'Outfit, sans-serif', letterSpacing: '0.08em' }}>EZRA EDU</span>
+          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>Child Strategic Plan Diagnostic</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          {saved && <span style={{ color: GOLD, fontSize: '0.78rem', opacity: 0.9 }}>✓ Saved</span>}
+          <a
+            href="/child-strategic-plan.pdf"
+            download
+            style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '6px 14px' }}
+          >
+            ↓ Download blank PDF
+          </a>
+          <button
+            onClick={() => window.print()}
+            style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 6, padding: '8px 20px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            Print / Save as PDF
+          </button>
+        </div>
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="print-page" style={{ maxWidth: 780, margin: '0 auto', padding: '2.5rem 1.5rem 4rem', fontFamily: "'Outfit', system-ui, sans-serif" }}>
+
+        {/* Cover heading */}
+        <div style={{ textAlign: 'center', paddingBottom: '2rem', borderBottom: `2px solid ${NAVY}`, marginBottom: '2rem' }}>
+          <p style={{ color: GOLD, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>Ezra Edu</p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 600, color: NAVY, marginBottom: 8 }}>
+            Child Strategic Plan Diagnostic
+          </h1>
+          <p style={{ fontSize: '0.88rem', color: '#555', marginBottom: 4 }}>A formation-based equipping plan grounded in the nine enhancements</p>
+          <p style={{ fontSize: '0.82rem', color: '#888' }}>Companion to <em>How We Educate Children and Develop Talent</em> · Will &amp; Donna Meier</p>
+        </div>
+
+        {/* How to Use */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <H1>How to Use This Diagnostic</H1>
+          <Body><strong>Education is never neutral. Information is not formation. See the child before you shape the child.</strong></Body>
+          <Body>This is a strategic plan, not a worksheet. It maps the nine enhancements from <em>How We Educate Children and Develop Talent</em> onto one specific child you are forming. You can complete it alone, with a co-parent or co-teacher, or alongside Ezra Edu — the AI coaching agent trained on the book.</Body>
+          <Body>Three convictions shape this work:</Body>
+          <ul style={{ paddingLeft: 24, marginBottom: '1rem' }}>
+            {['Every child carries a designed problem they were built to solve.', 'The bar does not drop. The doorway gets wider.', 'Formation is not delegable. The adult in front of the child carries something no system can replace.'].map((t, i) => (
+              <li key={i} style={{ fontSize: '0.9rem', color: BODY, lineHeight: 1.75, marginBottom: 4 }}>{t}</li>
+            ))}
+          </ul>
+          <Body>Work through the sections in order. Do not rush. If you do not know the answer, that itself is information — Ezra Edu can walk you through observation questions. Review the plan every ninety days.</Body>
+        </div>
+
+        {/* Child Snapshot */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <H1>Child Snapshot</H1>
+          {F('child_name', "Child's Name:")}
+          {F('age_grade', 'Age and Grade:')}
+          {CG('Primary Setting:', ['Homeschool', 'Private', 'Public', 'Co-op', 'Other'], 'setting')}
+          {F('lead_adults', 'Lead Adult(s):')}
+          {F('plan_started', 'Plan Started:')}
+          {F('next_review', 'Next Review (90 days):')}
+          {F('child_now', 'One sentence that describes who this child is right now:', 3)}
+          {F('child_future', 'What you most want for this child five years from now:', 4)}
+        </div>
+
+        {/* Section 1 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={1} title="Gifting and Passion" tagline="Orientation and the Designed Problem" />
+          <Body>Gifting tells you what this child can do. Passion tells you what they will not quit. Together they point to the kind of problem this child was designed to solve in the world.</Body>
+          {F('gifts_do_well', 'What does this child do well without being told?')}
+          {F('gifts_lights_up', 'What lights them up under challenge — what do they not quit?')}
+          {CG('What kind of problem does this child seem designed to solve?', ['Organize', 'Empathize', 'Innovate', 'Analyze', 'Lead', 'Build', 'Repair', 'Other'], 'problem_type')}
+          {NF(3, 'Top three observed gifts (specific, not generic):', 'gift')}
+          {F('passions', 'Current passion(s) — what they return to without being forced:')}
+          <Bold>Action This Season</Bold>
+          {F('action_exposure', 'One real-world exposure connected to gifting:')}
+          {F('action_mirror', 'One person who can mirror this gift back to the child:')}
+        </div>
+
+        {/* Section 2 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={2} title="Multiple Intelligences" tagline="The bar does not drop. The doorway gets wider." />
+          <Body>Rate this child's natural strength in each domain on a scale of 1 to 5. Note evidence — a moment, a habit, an unprompted choice that reveals the intelligence.</Body>
+          <MITable values={values} onChange={handleChange} />
+          {F('mi_doorways', 'Top two doorways — lead instruction through these:')}
+          {F('mi_expand', 'One weak domain to gently expand (not force):')}
+        </div>
+
+        {/* Section 3 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={3} title="Adversity as a Teacher" tagline="Challenge is not removed. It is stewarded." />
+          <Body>Children do not auto-extract meaning from hardship. The adult interprets the challenge. The interpretation shapes whether adversity becomes formation or wound.</Body>
+          {NF(3, 'Current real challenges this child is facing (academic, social, emotional, spiritual):', 'challenge')}
+          {F('adversity_curriculum', 'Hidden curriculum each challenge could teach (resilience, perseverance, humility, courage, discernment):', 4)}
+          {CG('How adversity is currently being interpreted in this child\'s hearing:', ['Dead end / unfair', 'Training ground / formation'], 'adversity_frame')}
+          {F('adversity_framing', 'One framing adjustment to make this season:')}
+          {F('adversity_lean', 'One challenge to lean into rather than rescue from:')}
+        </div>
+
+        {/* Section 4 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={4} title="Shepherd the Heart" tagline="Formation before performance." />
+          <Body>Behavior flows from the heart. Managing behavior without shepherding the heart produces compliance without character. The heart is the soil. Everything else grows from it.</Body>
+          {F('heart_loves', 'What does this child currently love?')}
+          {F('heart_fears', 'What does this child currently fear?')}
+          {F('heart_wants', 'What does this child want to be true about themselves?')}
+          {F('heart_performance', 'Where is performance being mistaken for formation in our adult relationship with this child?', 4)}
+          {F('heart_conversation', 'One conversation to have this week — not about behavior, but about the heart underneath:')}
+          <Bold>Heart Rhythms to Establish</Bold>
+          {CB('heart_rhythm_1', 'One weekly intentional heart conversation')}
+          {CB('heart_rhythm_2', 'One regular way the child sees their primary adult receive correction with grace')}
+          {CB('heart_rhythm_3', 'One regular practice of confession, repair, and restoration in the home')}
+        </div>
+
+        {/* Section 5 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={5} title="Learning Pathways" tagline="Use the doorway first, then expand the house." />
+          {CG('Primary pathway:', ['Visual', 'Auditory', 'Kinesthetic', 'Read/Write'], 'primary_pathway')}
+          {CG('Also consider:', ['Conversational', 'Project-based'], 'also_consider')}
+          {F('secondary_pathway', 'Secondary pathway:')}
+          {F('stuck_subject', 'Subject this child is currently stuck in:')}
+          {F('try_pathway', 'Try this pathway instead this week:')}
+          <Bold>Environmental Adjustments</Bold>
+          {F('env_light', 'Light:')}
+          {F('env_sound', 'Sound:')}
+          {F('env_time', 'Time of day they think best:')}
+          {F('env_posture', 'Body posture (sitting, standing, moving):')}
+          {F('env_experiment', 'One two-week experiment to run:')}
+        </div>
+
+        {/* Section 6 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={6} title="Activate Creativity" tagline="Creativity connects students to meaning." />
+          <Body>Every child carries creative capacity. Most children are not born with low creativity — they are born into environments that quiet it. The adult's job is to protect the conditions in which creativity can come out.</Body>
+          {CG('Current state of this child\'s creativity:', ['Flourishing', 'Present but quiet', 'Suppressed', 'Underdeveloped'], 'creativity_state')}
+          {F('creativity_blocks', 'What blocks it (be specific):', 4)}
+          {NF(3, 'Three weekly creativity practices to install:', 'creativity_practice')}
+          {F('creativity_project', 'One creative project this child will own start-to-finish in the next 60 days:')}
+        </div>
+
+        {/* Section 7 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={7} title="Humor" tagline="A signal of safety, security, and health." />
+          <Body>Humor is diagnostic. It tells you whether the room is safe. When laughter rises, learning rises with it. When humor turns into mockery or shame, the room has closed.</Body>
+          {CG('In the last 90 days, this child\'s laughter has:', ['Increased', 'Stayed the same', 'Decreased'], 'humor_trend')}
+          {F('humor_change', 'What changed?')}
+          {F('humor_appears', 'Where in the day does humor appear naturally?')}
+          {F('humor_wounded', 'Where has humor been wounded (sarcasm, mockery, shame-based teasing)?')}
+          {F('humor_repair', 'Repair needed:')}
+          {F('humor_recover', 'One adult-modeled habit of light-heartedness to recover:')}
+        </div>
+
+        {/* Section 8 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={8} title="Group Projects" tagline="Socialization, collaboration, and contribution." />
+          {CG("This child's current group role:", ['Initiator', 'Connector', 'Builder', 'Encourager', 'Quality-checker', 'Observer', 'Disrupter', 'Avoider'], 'group_role')}
+          {F('collab_strengths', 'Strengths in collaboration:')}
+          {F('collab_gaps', 'Gaps in collaboration:')}
+          <Bold>One Real Group Project in the Next 90 Days</Bold>
+          {F('project_what', 'What:')}
+          {F('project_role', 'Their role:')}
+          {F('project_stretch', 'A role they do not default to that they should try:')}
+          <Bold>Skills to Coach During This Project</Bold>
+          {CB('skill_disagree', 'Voicing respectful disagreement')}
+          {CB('skill_correction', 'Receiving correction without withdrawing')}
+          {CB('skill_lead', 'Leading without controlling')}
+          {CB('skill_follow', 'Following without disappearing')}
+          {CB('skill_repair', 'Repairing after conflict')}
+        </div>
+
+        {/* Section 9 */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <SectionHeader num={9} title="Train Critical Thinking" tagline="Discern roots, assumptions, and outcomes." />
+          {CG('Current critical thinking baseline:', ['Accepts most at face value', 'Asks why naturally', 'Skeptical without grounding', 'Beginning to test claims'], 'ct_baseline')}
+          <Bold>Inputs Currently Shaping This Child the Most</Bold>
+          {F('ct_screens', 'Screens:')}
+          {F('ct_peers', 'Peers:')}
+          {F('ct_algorithms', 'Algorithms / platforms:')}
+          {F('ct_adults', 'Adults outside the home:')}
+          {F('ct_books', 'Books / curriculum:')}
+          {F('ct_rep', 'One low-pressure critical-thinking rep to install this week:')}
+          <Bold>Six Questions to Teach This Child to Ask of Any Claim</Bold>
+          <ol style={{ paddingLeft: 24, marginBottom: '1rem' }}>
+            {['Who is saying this?', 'What are they assuming?', 'What is the evidence?', 'What is the alternative?', 'What is at stake — for them, and for me?', 'Does this hold up when I bring it to Scripture?'].map((q, i) => (
+              <li key={i} style={{ fontSize: '0.9rem', color: BODY, lineHeight: 1.75, marginBottom: 4 }}>{q}</li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Putting It All Together */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <H1>Putting It All Together</H1>
+          <Body italic>A formation plan does not have to be complicated. It does need to be intentional.</Body>
+          {NF(3, 'Top three formation priorities for this child for the next 90 days:', 'priority')}
+          <Bold>Weekly Rhythm We Will Hold</Bold>
+          {CB('rhythm_strengths', 'One conversation about strengths and passion + one real-world exposure')}
+          {CB('rhythm_heart', 'One intentional heart conversation')}
+          {CB('rhythm_pathway', 'One learning-pathway experiment')}
+          {CB('rhythm_creative', 'One creative project moment')}
+          {CB('rhythm_challenge', 'One challenge held (not rescued from)')}
+          {CB('rhythm_collab', 'One collaborative project touchpoint')}
+          {CB('rhythm_ct', 'One critical-thinking rep')}
+          <div style={{ marginTop: '1rem' }} />
+          <Bold>Primary Adult Accountable for Each Priority</Bold>
+          {F('accountable_1', 'Priority 1:')}
+          {F('accountable_2', 'Priority 2:')}
+          {F('accountable_3', 'Priority 3:')}
+          {F('stop_doing', 'What we will stop doing (something must go for something new to begin):', 4)}
+        </div>
+
+        {/* Identity Declaration */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <H1>Identity Declaration</H1>
+          <Body><strong>What This Child Carries Into Adulthood</strong></Body>
+          <Body>Every child carries an unspoken question into adulthood: did anyone really see me? Speak these words. Speak them often. Speak them out loud.</Body>
+          {NF(3, 'Three things we want this child to know we see in them:', 'identity')}
+          {F('scripture', 'Scripture or promise we will speak over this child this season:', 4)}
+          {F('becoming', 'One sentence describing who this child is becoming:')}
+        </div>
+
+        {/* Review Cadence */}
+        <div className="section-block" style={{ marginBottom: '2rem' }}>
+          <H1>Review Cadence</H1>
+          <Body italic>Children grow non-linearly. The plan adapts as the child reveals more of who they were made to be.</Body>
+          <ReviewTable values={values} onChange={handleChange} />
+          {F('ezra_notes', 'Notes from coaching with Ezra Edu (patterns, insights, things to track):', 6)}
+        </div>
+
+        {/* Close */}
+        <div style={{ borderTop: `2px solid ${NAVY}`, paddingTop: '2rem', textAlign: 'center' }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.1rem', color: NAVY, fontWeight: 600, marginBottom: 8 }}>Continue with Ezra Edu</p>
+          <p style={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 1rem' }}>
+            Once you have completed this diagnostic, bring it into Ezra Edu and ask it to walk through the plan with you. Ezra will coach you through each enhancement, help you find what you cannot yet see, and adapt the plan as your child grows.
+          </p>
+          <a href="https://ezra.edu.awakeningdestiny.global" style={{ color: GOLD, fontWeight: 700, fontSize: '0.9rem' }}>
+            ezra.edu.awakeningdestiny.global
+          </a>
+          <p style={{ fontSize: '0.82rem', color: '#999', marginTop: '1.5rem', fontStyle: 'italic' }}>
+            This plan is a tool, not a verdict. The Spirit forms the carrier. The carrier forms the child. Ezra Edu walks alongside.
+          </p>
+          <p style={{ fontSize: '0.78rem', color: '#bbb', marginTop: 8 }}>Forming. Gathering. Releasing. · Awakening Destiny Global · awakeningdestiny.global</p>
+        </div>
+
+        {/* Print button bottom */}
+        <div className="no-print" style={{ textAlign: 'center', marginTop: '3rem' }}>
+          <button
+            onClick={() => window.print()}
+            style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 8, padding: '14px 40px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', fontFamily: 'inherit', marginRight: 12 }}
+          >
+            Print / Save as PDF
+          </button>
+          <a
+            href="/child-strategic-plan.pdf"
+            download
+            style={{ color: NAVY, fontSize: '0.88rem', textDecoration: 'underline' }}
+          >
+            Download blank PDF instead
+          </a>
+        </div>
+
+      </div>
+    </>
+  );
+}

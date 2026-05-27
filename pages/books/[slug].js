@@ -28,10 +28,8 @@ function DownloadGate({ dark, label = 'Download Free' }) {
         body:    JSON.stringify({ firstName, lastName, email }),
       });
     } catch (_) {}
-    // Always trigger download regardless of API result
-    setDone(true);
-    setLoading(false);
-    setTimeout(() => linkRef.current?.click(), 100);
+    // Redirect to the interactive HTML form (has "download blank PDF" link too)
+    window.location.href = '/books/diagnostic';
   }
 
   const inputStyle = {
