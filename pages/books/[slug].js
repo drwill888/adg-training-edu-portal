@@ -166,8 +166,19 @@ export default function BookPage({ product }) {
       const em = decodeURIComponent(urlEmail);
       setSessionEmail(em);
       setSessionVerified(true);
-      if (p.get('session_id')) setHasPaid(true);
       setInitialEmail(em);
+
+      if (p.get('session_id')) {
+        // Coming back from Stripe — trust the redirect, payment is confirmed
+        setHasPaid(true);
+      } else {
+        // Coming from diagnostic or bookmark — verify they actually paid
+        fetch(`/api/books/check-access?email=${encodeURIComponent(em)}&productSlug=${product.slug}`)
+          .then(r => r.json())
+          .then(json => { if (json.allowed) setHasPaid(true); })
+          .catch(() => {});
+      }
+
       // Scroll to the session section after a short delay
       setTimeout(() => {
         document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth' });
@@ -208,6 +219,12 @@ export default function BookPage({ product }) {
     setSessionEmail(em);
     setSessionVerified(true);
     try {
+      // Check payment access
+      const accessRes = await fetch(`/api/books/check-access?email=${encodeURIComponent(em)}&productSlug=${product.slug}`);
+      const accessData = await accessRes.json();
+      if (accessData.allowed) setHasPaid(true);
+
+      // Load child plans regardless of payment (they can still see the diagnostic link)
       const res = await fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`);
       const json = await res.json();
       if (json.plans?.length) {
@@ -492,7 +509,7 @@ export default function BookPage({ product }) {
       )}
 
       {/* ── Purchase ─────────────────────────────────────────────────────── */}
-      <section id="purchase" style={{ background: CREAM, padding: '5rem 2rem', display: sessionVerified ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <section id="purchase" style={{ background: CREAM, padding: '5rem 2rem', display: hasPaid ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ maxWidth: 540, width: '100%', textAlign: 'center' }}>
           <p style={{ color: GOLD, textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.7rem', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif' }}>Get Started Today</p>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 400, color: NAVY, lineHeight: 1.2, marginBottom: '0.5rem' }}>
@@ -558,12 +575,14 @@ export default function BookPage({ product }) {
         {/* Header */}
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.4rem', fontWeight: 400, color: WHITE, marginBottom: 8 }}>
-            {sessionVerified ? (hasPaid ? 'Your session is ready.' : 'Welcome back.') : 'Already purchased? Open your session.'}
+            {!sessionVerified ? 'Already purchased? Open your session.' : hasPaid ? 'Your session is ready.' : 'Access not found.'}
           </h3>
           <p style={{ color: 'rgba(253,248,240,0.55)', fontSize: '0.88rem' }}>
-            {sessionVerified
+            {!sessionVerified
+              ? 'Enter the email you purchased with to pick up where you left off.'
+              : hasPaid
               ? `You have ${product.dailyLimit} conversations per day. Your access runs ${product.daysAccess} days from purchase.`
-              : 'Enter the email you purchased with to pick up where you left off.'}
+              : 'No active purchase found for that email. Purchase access below to get started.'}
           </p>
         </div>
 
@@ -588,8 +607,25 @@ export default function BookPage({ product }) {
           </form>
         )}
 
-        {/* Session content — shown after email verified */}
-        {sessionVerified && (
+        {/* Verified but not paid — prompt to purchase */}
+        {sessionVerified && !hasPaid && (
+          <div style={{ width: '100%', maxWidth: 540, background: 'rgba(200,169,81,0.08)', border: '1px solid rgba(200,169,81,0.3)', borderRadius: 14, padding: '2rem', textAlign: 'center' }}>
+            <p style={{ fontSize: '1.4rem', marginBottom: 12 }}>🔒</p>
+            <p style={{ color: WHITE, fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>Ezra requires a one-time purchase.</p>
+            <p style={{ color: 'rgba(253,248,240,0.6)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+              We don&apos;t see a paid account for <strong style={{ color: GOLD }}>{sessionEmail}</strong>.<br />
+              Purchase {product.daysAccess}-day coaching access for {price} to open your session.
+            </p>
+            <button
+              onClick={() => document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '13px 28px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+              💳 Get Access — {price}
+            </button>
+          </div>
+        )}
+
+        {/* Session content — shown only after access is confirmed */}
+        {sessionVerified && hasPaid && (
           <>
             {/* Template download bar */}
             <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.09)', border: '1px solid rgba(200,169,81,0.28)', borderRadius: 12, padding: '1rem 1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
