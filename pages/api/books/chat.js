@@ -1,13 +1,18 @@
 // pages/api/books/chat.js
 // Universal book chat endpoint — handles any product slug.
+// Embeddings: OpenAI text-embedding-3-small (unchanged)
+// Chat:       Anthropic Claude (warmer, more pastoral coaching tone)
 // The client sends { sessionId, question, email, productSlug } in the request body.
-import path from 'path';
+import Anthropic from '@anthropic-ai/sdk';
 import { getEmbedding } from '@/lib/embeddings';
 import { matchProductChunks } from '@/lib/products/retrieval';
 import { checkProductAccess, checkDailyLimit, incrementDailyUsage } from '@/lib/products/access';
 import { getProduct } from '@/lib/products/registry';
 import { getOrCreateConversation, logMessage, getRecentMessages } from '@/lib/coach/session';
-import { COACH_CONFIG } from '@/lib/coach/usage';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const CLAUDE_MODEL      = process.env.BOOK_CLAUDE_MODEL || 'claude-sonnet-4-5';
+const CLAUDE_MAX_TOKENS = parseInt(process.env.BOOK_CLAUDE_MAX_TOKENS || '1024', 10);
 
 const ALLOWED_ORIGINS = [
   'https://awakeningdestiny.global',
@@ -106,33 +111,18 @@ export default async function handler(req, res) {
     const historyMessages = buildHistory(history);
     const userPrompt     = buildPrompt({ question, context });
 
-    const messages = [
-      { role: 'system',  content: systemPrompt },
-      ...historyMessages,
-      { role: 'user',    content: userPrompt },
-    ];
-
-    // 7) Call OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:  'Bearer ' + process.env.OPENAI_API_KEY,
-      },
-      body: JSON.stringify({
-        model:      COACH_CONFIG.model,
-        max_tokens: COACH_CONFIG.maxReplyTokens,
-        messages,
-      }),
+    // 7) Call Claude — system prompt is a top-level param, not a message role
+    const claudeResponse = await anthropic.messages.create({
+      model:      CLAUDE_MODEL,
+      max_tokens: CLAUDE_MAX_TOKENS,
+      system:     systemPrompt,
+      messages:   [
+        ...historyMessages,
+        { role: 'user', content: userPrompt },
+      ],
     });
 
-    const data = await response.json();
-    if (response.status !== 200) {
-      console.error(`OpenAI error [${productSlug}]:`, JSON.stringify(data));
-      return res.status(500).json({ error: 'Failed to generate response' });
-    }
-
-    const answer = data.choices?.[0]?.message?.content || '';
+    const answer = claudeResponse.content?.[0]?.text || '';
 
     // 8) Persist + increment in parallel
     await Promise.all([
