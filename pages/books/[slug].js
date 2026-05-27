@@ -103,6 +103,25 @@ export default function BookPage({ product }) {
               You have {product.dailyLimit} conversations per day. Your access runs {product.daysAccess} days from purchase.
             </p>
           </div>
+
+          {/* Template download — unlocked with purchase */}
+          <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.1)', border: '1px solid rgba(200,169,81,0.35)', borderRadius: 12, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+              <span style={{ fontSize: 26 }}>📋</span>
+              <div>
+                <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.95rem', margin: '0 0 2px' }}>Child Strategic Plan Diagnostic</p>
+                <p style={{ color: 'rgba(253,248,240,0.6)', fontSize: '0.8rem', margin: 0 }}>Your free fillable PDF — use it alongside your coaching sessions.</p>
+              </div>
+            </div>
+            <a
+              href="/child-strategic-plan.pdf"
+              download="Child-Strategic-Plan-Diagnostic.pdf"
+              style={{ background: GOLD, color: NAVY, padding: '10px 20px', borderRadius: 8, fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              ↓ Download PDF
+            </a>
+          </div>
+
           <div style={{ width: '100%', maxWidth: 640 }}>
             <ProductChat productSlug={product.slug} product={product} initialEmail={initialEmail} />
           </div>
@@ -123,6 +142,22 @@ export default function BookPage({ product }) {
           <div style={{ width: '100%', maxWidth: 640 }}>
             <ProductChat productSlug={product.slug} product={product} initialEmail="" />
           </div>
+          {/* Template download — always available for returning customers */}
+          <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.08)', border: '1px solid rgba(200,169,81,0.25)', borderRadius: 10, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <span style={{ fontSize: 22 }}>📋</span>
+              <p style={{ color: 'rgba(253,248,240,0.7)', fontSize: '0.82rem', margin: 0 }}>
+                <span style={{ color: GOLD, fontWeight: 600 }}>Child Strategic Plan Diagnostic</span> — your free planning template
+              </p>
+            </div>
+            <a
+              href="/child-strategic-plan.pdf"
+              download="Child-Strategic-Plan-Diagnostic.pdf"
+              style={{ color: GOLD, fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', border: `1px solid rgba(200,169,81,0.4)`, padding: '6px 14px', borderRadius: 6 }}
+            >
+              ↓ Download
+            </a>
+          </div>
         </section>
       )}
 
@@ -139,10 +174,27 @@ export default function BookPage({ product }) {
             {product.description}
           </p>
 
+          {/* Bonus callout — strategy template */}
+          <div style={{ background: NAVY, borderRadius: 12, padding: '1.5rem 1.75rem', textAlign: 'left', marginBottom: '1.5rem', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 28, flexShrink: 0, marginTop: 2 }}>📋</span>
+            <div>
+              <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>
+                Included Free
+              </p>
+              <p style={{ color: WHITE, fontWeight: 700, fontSize: '1.05rem', marginBottom: 6, lineHeight: 1.3 }}>
+                Child Strategic Plan Diagnostic
+              </p>
+              <p style={{ color: 'rgba(253,248,240,0.72)', fontSize: '0.88rem', lineHeight: 1.65, margin: 0 }}>
+                A fillable PDF planning tool to map your child&apos;s learning style, strengths, and education strategy — yours to keep. Download it instantly with your purchase and use it alongside your Ezra coaching sessions.
+              </p>
+            </div>
+          </div>
+
           {/* What you get */}
           <div style={{ background: WHITE, border: `1px solid rgba(200,169,81,0.3)`, borderRadius: 12, padding: '1.5rem', textAlign: 'left', marginBottom: '2rem' }}>
             {[
               `Up to ${product.dailyLimit} conversations per day for ${product.daysAccess} days`,
+              'Child Strategic Plan Diagnostic — fillable PDF template included',
               'Personalized strategy — not generic advice',
               'Answers grounded in the book',
               'Ask about your specific situation and get a real plan',
