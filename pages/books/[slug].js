@@ -151,6 +151,10 @@ export default function BookPage({ product }) {
   const [openFaq, setOpenFaq]         = useState(null);
   const [childPlans, setChildPlans]   = useState([]);   // [{child_name, updated_at}]
   const [activeChild, setActiveChild] = useState('');   // selected child_name
+  const [sessionEmail, setSessionEmail]       = useState('');  // unified session email
+  const [sessionInput, setSessionInput]       = useState('');  // email field for returning users
+  const [sessionVerified, setSessionVerified] = useState(false);
+  const [sessionLoading, setSessionLoading]   = useState(false);
 
   // Scroll to #purchase when arriving from an external link (e.g. diagnostic page)
   useEffect(() => {
@@ -169,6 +173,12 @@ export default function BookPage({ product }) {
       setHasPaid(true);
       const em = decodeURIComponent(p.get('email'));
       setInitialEmail(em);
+      setSessionEmail(em);
+      setSessionVerified(true);
+      // Scroll to the session section after a short delay
+      setTimeout(() => {
+        document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
       // Load child plans for this email
       fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`)
         .then(r => r.json())
@@ -195,6 +205,24 @@ export default function BookPage({ product }) {
       if (data.url) window.location.href = data.url;
     } catch (err) { console.error(err); }
     finally { setCL(false); }
+  }
+
+  async function handleSessionEmail(e) {
+    e?.preventDefault();
+    const em = sessionInput.trim().toLowerCase();
+    if (!em || !em.includes('@')) return;
+    setSessionLoading(true);
+    setSessionEmail(em);
+    setSessionVerified(true);
+    try {
+      const res = await fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`);
+      const json = await res.json();
+      if (json.plans?.length) {
+        setChildPlans(json.plans);
+        setActiveChild(json.plans[0].child_name || '');
+      }
+    } catch (_) {}
+    finally { setSessionLoading(false); }
   }
 
   const rawPrice = product.priceUsd / 100;
@@ -531,64 +559,95 @@ export default function BookPage({ product }) {
         </div>
       </section>
 
-      {/* ── Returning customers / My Session ────────────────────────────── */}
+      {/* ── My Session (paid access) ─────────────────────────────────────── */}
       <section id="my-session" style={{ background: '#0a1f3a', padding: '3.5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+
+        {/* Header */}
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.4rem', fontWeight: 400, color: WHITE, marginBottom: 8 }}>
-            {hasPaid ? 'Your session is ready.' : 'Already purchased? Open your session.'}
+            {sessionVerified ? (hasPaid ? 'Your session is ready.' : 'Welcome back.') : 'Already purchased? Open your session.'}
           </h3>
           <p style={{ color: 'rgba(253,248,240,0.55)', fontSize: '0.88rem' }}>
-            {hasPaid
+            {sessionVerified
               ? `You have ${product.dailyLimit} conversations per day. Your access runs ${product.daysAccess} days from purchase.`
               : 'Enter the email you purchased with to pick up where you left off.'}
           </p>
         </div>
 
-        {/* Template download bar */}
-        <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.09)', border: '1px solid rgba(200,169,81,0.28)', borderRadius: 12, padding: '1rem 1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <span style={{ fontSize: 22 }}>📋</span>
-            <div>
-              <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.88rem', margin: '0 0 2px' }}>Child Strategic Plan Diagnostic</p>
-              <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Your free fillable PDF planning template</p>
-            </div>
-          </div>
-          <DownloadGate dark label="Download Template" />
-        </div>
-
-        {/* Child selector — shown when email has multiple plans */}
-        {childPlans.length > 0 && (
-          <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.07)', border: '1px solid rgba(200,169,81,0.25)', borderRadius: 10, padding: '0.9rem 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <span style={{ color: GOLD, fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap' }}>Coaching for:</span>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
-              {childPlans.map(p => (
-                <button key={p.child_name}
-                  onClick={() => setActiveChild(p.child_name)}
-                  style={{
-                    background: activeChild === p.child_name ? GOLD : 'rgba(255,255,255,0.07)',
-                    color: activeChild === p.child_name ? NAVY : 'rgba(253,248,240,0.7)',
-                    border: `1px solid ${activeChild === p.child_name ? GOLD : 'rgba(200,169,81,0.25)'}`,
-                    borderRadius: 20, padding: '5px 14px', fontSize: '0.82rem',
-                    fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                  }}>
-                  {p.child_name || 'Unnamed child'}
-                </button>
-              ))}
-              <a href="/books/diagnostic" style={{ color: 'rgba(253,248,240,0.45)', fontSize: '0.78rem', textDecoration: 'underline', alignSelf: 'center', marginLeft: 4 }}>
-                + Add another child
-              </a>
-            </div>
-          </div>
+        {/* Email entry — shown until session is verified */}
+        {!sessionVerified && (
+          <form onSubmit={handleSessionEmail} style={{ width: '100%', maxWidth: 480, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <input
+              type="email"
+              required
+              placeholder="your@email.com"
+              value={sessionInput}
+              onChange={e => setSessionInput(e.target.value)}
+              style={{ flex: 1, minWidth: 200, border: '1px solid rgba(200,169,81,0.4)', borderRadius: 8, padding: '12px 14px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.06)', color: WHITE, outline: 'none' }}
+            />
+            <button
+              type="submit"
+              disabled={sessionLoading}
+              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '12px 22px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', opacity: sessionLoading ? 0.7 : 1 }}
+            >
+              {sessionLoading ? 'Loading…' : 'Open My Session'}
+            </button>
+          </form>
         )}
 
-        <div style={{ width: '100%', maxWidth: 640 }}>
-          <ProductChat
-            productSlug={product.slug}
-            product={product}
-            initialEmail={hasPaid ? initialEmail : ''}
-            childName={activeChild}
-          />
-        </div>
+        {/* Session content — shown after email verified */}
+        {sessionVerified && (
+          <>
+            {/* Template download bar */}
+            <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.09)', border: '1px solid rgba(200,169,81,0.28)', borderRadius: 12, padding: '1rem 1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <span style={{ fontSize: 22 }}>📋</span>
+                <div>
+                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.88rem', margin: '0 0 2px' }}>Child Strategic Plan Diagnostic</p>
+                  <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Fill this out so Ezra knows your child personally</p>
+                </div>
+              </div>
+              <a href="/books/diagnostic" style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Fill the Diagnostic
+              </a>
+            </div>
+
+            {/* Child selector — shown when plans exist */}
+            {childPlans.length > 0 && (
+              <div style={{ width: '100%', maxWidth: 640, background: 'rgba(200,169,81,0.07)', border: '1px solid rgba(200,169,81,0.25)', borderRadius: 10, padding: '0.9rem 1.25rem', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ color: GOLD, fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap' }}>Coaching for:</span>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+                  {childPlans.map(p => (
+                    <button key={p.child_name}
+                      onClick={() => setActiveChild(p.child_name)}
+                      style={{
+                        background: activeChild === p.child_name ? GOLD : 'rgba(255,255,255,0.07)',
+                        color: activeChild === p.child_name ? NAVY : 'rgba(253,248,240,0.7)',
+                        border: `1px solid ${activeChild === p.child_name ? GOLD : 'rgba(200,169,81,0.25)'}`,
+                        borderRadius: 20, padding: '5px 14px', fontSize: '0.82rem',
+                        fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit',
+                      }}>
+                      {p.child_name || 'Unnamed child'}
+                    </button>
+                  ))}
+                  <a href="/books/diagnostic" style={{ color: 'rgba(253,248,240,0.45)', fontSize: '0.78rem', textDecoration: 'underline', alignSelf: 'center', marginLeft: 4 }}>
+                    + Add another child
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Ezra chat */}
+            <div style={{ width: '100%', maxWidth: 640 }}>
+              <ProductChat
+                productSlug={product.slug}
+                product={product}
+                initialEmail={sessionEmail}
+                childName={activeChild}
+              />
+            </div>
+          </>
+        )}
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
