@@ -179,10 +179,10 @@ export default function BookPage({ product }) {
           .catch(() => {});
       }
 
-      // Scroll to the session section after a short delay
+      // Scroll to the session section — delay long enough for ProductChat to mount
       setTimeout(() => {
-        document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth' });
-      }, 500);
+        document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1200);
       // Load child plans for this email
       fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`)
         .then(r => r.json())
@@ -232,7 +232,13 @@ export default function BookPage({ product }) {
         setActiveChild(json.plans[0].child_name || '');
       }
     } catch (_) {}
-    finally { setSessionLoading(false); }
+    finally {
+      setSessionLoading(false);
+      // Re-anchor to top of session section after content expands
+      setTimeout(() => {
+        document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
   }
 
   const rawPrice = product.priceUsd / 100;
