@@ -344,6 +344,21 @@ export default function DiagnosticPage() {
     } catch (_) {}
   }, []);
 
+  // Warn before leaving if data is filled but email not saved to cloud
+  useEffect(() => {
+    function handleBeforeUnload(e) {
+      const hasData = Object.values(values).some(v => v && String(v).trim().length > 0);
+      const emailSaved = Boolean(saveEmail && saveEmail.includes('@'));
+      if (hasData && !emailSaved) {
+        e.preventDefault();
+        e.returnValue = 'Your plan has not been saved to the cloud yet. Enter your email before leaving so you don\'t lose your work.';
+        return e.returnValue;
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [values, saveEmail]);
+
   // Load from cloud when email is entered
   const loadFromCloud = useCallback(async (email) => {
     if (!email || !email.includes('@')) return;
@@ -798,6 +813,31 @@ export default function DiagnosticPage() {
           </p>
           <p style={{ fontSize: '0.78rem', color: '#bbb', marginTop: 8 }}>Forming. Gathering. Releasing. · Awakening Destiny Global · awakeningdestiny.global</p>
         </div>
+
+        {/* ── Floating "save your work" nudge — appears once fields are filled but no email yet ── */}
+        {!saveEmail && Object.values(values).filter(v => v && String(v).trim().length > 0).length >= 3 && (
+          <div className="no-print" style={{
+            position: 'fixed', bottom: 24, right: 24, zIndex: 999,
+            background: NAVY, color: 'white', borderRadius: 12,
+            padding: '14px 20px', maxWidth: 320,
+            boxShadow: '0 8px 32px rgba(2,26,53,0.35)',
+            border: `2px solid ${GOLD}`,
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <p style={{ fontSize: '0.88rem', fontWeight: 700, color: GOLD, margin: 0 }}>
+              ⚠️ Don't lose your work!
+            </p>
+            <p style={{ fontSize: '0.78rem', color: 'rgba(253,248,240,0.8)', margin: 0, lineHeight: 1.5 }}>
+              Enter your email above to save your plan to the cloud.
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 7, padding: '8px 14px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', textAlign: 'center' }}
+            >
+              Save my plan now
+            </button>
+          </div>
+        )}
 
         {/* ── Bottom save + print reminder ── */}
         <div className="no-print" style={{ background: '#eef2fa', border: `1px solid rgba(30,42,74,0.18)`, borderRadius: 12, padding: '1.5rem 1.75rem', marginTop: '2.5rem', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
