@@ -13,9 +13,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Edu list config (form 11)
+// Edu list config (form 11).
+// formPageUrl falls back to the coach page if the EDU page isn't set —
+// the WP nonce is site-wide so any Icegram form page works to get one.
 const EDU_CONFIG = {
-  formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL,
+  formPageUrl: process.env.ICEGRAM_EDU_FORM_PAGE_URL || process.env.ICEGRAM_FORM_PAGE_URL,
   listHash:    process.env.ICEGRAM_EDU_LIST_HASH,
   formId:      process.env.ICEGRAM_EDU_FORM_ID || '11',
 };
