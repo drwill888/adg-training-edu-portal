@@ -324,22 +324,42 @@ export default function DiagnosticPage() {
   const [summaryBlocked, setSumBlocked] = useState(false);
   const [summaryError, setSumError]     = useState('');
 
-  // Load from localStorage on mount — also pick up ?email= from URL (passed from paid session)
+  // Load from localStorage on mount — also pick up ?email= and ?childName= from URL
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setValues(JSON.parse(stored));
 
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+
       // URL email takes priority (coming from paid Ezra session)
-      const urlEmail = typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('email')
-        : null;
+      const urlEmail = params?.get('email');
       const storedEmail = localStorage.getItem(STORAGE_KEY + '_email');
       const emailToUse = urlEmail ? decodeURIComponent(urlEmail) : storedEmail;
 
       if (emailToUse) {
         setSaveEmail(emailToUse);
         try { localStorage.setItem(STORAGE_KEY + '_email', emailToUse); } catch (_) {}
+      }
+
+      // Pre-fill child_name from URL and load that child's saved data
+      const urlChild = params?.get('childName');
+      if (urlChild) {
+        const childDecoded = decodeURIComponent(urlChild);
+        setValues(prev => ({ ...prev, child_name: childDecoded }));
+        // Load this child's cloud data if we have an email
+        if (emailToUse) {
+          fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(emailToUse)}&productSlug=${PRODUCT_SLUG}&childName=${encodeURIComponent(childDecoded)}`)
+            .then(r => r.json())
+            .then(json => {
+              if (json.data) {
+                setValues(json.data);
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch (_) {}
+                if (json.summary) setSummary(json.summary);
+              }
+            })
+            .catch(() => {});
+        }
       }
     } catch (_) {}
   }, []);

@@ -646,8 +646,8 @@ export default function BookPage({ product }) {
                   <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Fill this out so Ezra knows your child personally</p>
                 </div>
               </div>
-              <a href={`/books/diagnostic?email=${encodeURIComponent(sessionEmail)}`} style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                Fill the Diagnostic
+              <a href={`/books/diagnostic?email=${encodeURIComponent(sessionEmail)}${activeChild ? `&childName=${encodeURIComponent(activeChild)}` : ''}`} style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                {activeChild ? `Fill for ${activeChild}` : 'Fill the Diagnostic'}
               </a>
             </div>
 
