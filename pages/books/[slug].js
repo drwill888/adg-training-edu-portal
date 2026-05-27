@@ -73,7 +73,7 @@ function DownloadGate({ dark, label = 'Download Free' }) {
         {loading ? 'Downloading…' : 'Get the Free Template'}
       </button>
       <p style={{ fontSize: '0.72rem', color: dark ? 'rgba(253,248,240,0.35)' : '#9ca3af', margin: 0, lineHeight: 1.5 }}>
-        We&apos;ll add you to Will&apos;s Ezra Edu list. No spam. Unsubscribe any time.
+        By submitting you agree to receive emails from Awakening Destiny Global. Unsubscribe any time.
       </p>
     </form>
   );
@@ -570,7 +570,7 @@ export default function BookPage({ product }) {
               {checkoutLoading ? 'Redirecting to Stripe…' : `💳 Pay ${price} — Proceed to Checkout`}
             </button>
             <p style={{ fontSize: '0.78rem', color: '#9ca3af', textAlign: 'center', lineHeight: 1.5 }}>
-              You will be redirected to Stripe to complete payment securely. Access begins immediately after.
+              You will be redirected to Stripe to complete payment securely. Access begins immediately after. By purchasing you agree to receive emails from Awakening Destiny Global. Unsubscribe any time.
             </p>
             <p style={{ fontSize: '0.72rem', color: '#c4c8cc', textAlign: 'center', lineHeight: 1.65 }}>
               Ezra is an AI coaching tool trained on Will Meier&apos;s book. It is not a licensed educator, therapist, or diagnostician. For learning disabilities, medical concerns, or clinical questions, please consult a qualified professional.
@@ -598,22 +598,27 @@ export default function BookPage({ product }) {
 
         {/* Email entry — shown until session is verified */}
         {!sessionVerified && (
-          <form onSubmit={handleSessionEmail} style={{ width: '100%', maxWidth: 480, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <input
-              type="email"
-              required
-              placeholder="your@email.com"
-              value={sessionInput}
-              onChange={e => setSessionInput(e.target.value)}
-              style={{ flex: 1, minWidth: 200, border: '1px solid rgba(200,169,81,0.4)', borderRadius: 8, padding: '12px 14px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.06)', color: WHITE, outline: 'none' }}
-            />
-            <button
-              type="submit"
-              disabled={sessionLoading}
-              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '12px 22px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', opacity: sessionLoading ? 0.7 : 1 }}
-            >
-              {sessionLoading ? 'Loading…' : 'Open My Session'}
-            </button>
+          <form onSubmit={handleSessionEmail} style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <input
+                type="email"
+                required
+                placeholder="your@email.com"
+                value={sessionInput}
+                onChange={e => setSessionInput(e.target.value)}
+                style={{ flex: 1, minWidth: 200, border: '1px solid rgba(200,169,81,0.4)', borderRadius: 8, padding: '12px 14px', fontSize: '0.9rem', background: 'rgba(255,255,255,0.06)', color: WHITE, outline: 'none' }}
+              />
+              <button
+                type="submit"
+                disabled={sessionLoading}
+                style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '12px 22px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', opacity: sessionLoading ? 0.7 : 1 }}
+              >
+                {sessionLoading ? 'Loading…' : 'Open My Session'}
+              </button>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: 'rgba(253,248,240,0.35)', margin: 0, lineHeight: 1.5 }}>
+              By submitting you agree to receive emails from Awakening Destiny Global. Unsubscribe any time.
+            </p>
           </form>
         )}
 
@@ -732,6 +737,9 @@ export default function BookPage({ product }) {
           </button>
           <DownloadGate dark={false} label="Free Template" />
         </div>
+        <p style={{ color: 'rgba(2,26,53,0.4)', fontSize: '0.72rem', marginTop: '2.5rem', lineHeight: 1.7 }}>
+          &copy; {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools on this page are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
       </section>
     </>
   );

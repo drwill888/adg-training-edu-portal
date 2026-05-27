@@ -572,6 +572,9 @@ export default function DiagnosticPage() {
               {cloudStatus === 'loaded' ? '✓ Loaded' : 'Load / Save'}
             </button>
           </div>
+          <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: '4px 0 0', lineHeight: 1.5 }}>
+            By saving you agree to receive emails from Awakening Destiny Global. Unsubscribe any time.
+          </p>
         </div>
 
         {/* Multi-child purchase gate banner */}
@@ -898,6 +901,13 @@ export default function DiagnosticPage() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── Copyright ── */}
+      <div className="no-print" style={{ background: NAVY, padding: '1.5rem 2rem', textAlign: 'center' }}>
+        <p style={{ color: 'rgba(253,248,240,0.3)', fontSize: '0.7rem', margin: 0, lineHeight: 1.7 }}>
+          &copy; {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
       </div>
     </>
   );
