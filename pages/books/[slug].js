@@ -161,12 +161,13 @@ export default function BookPage({ product }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
-    if (p.get('session_id') && p.get('email')) {
-      setHasPaid(true);
-      const em = decodeURIComponent(p.get('email'));
-      setInitialEmail(em);
+    const urlEmail = p.get('email');
+    if (urlEmail) {
+      const em = decodeURIComponent(urlEmail);
       setSessionEmail(em);
       setSessionVerified(true);
+      if (p.get('session_id')) setHasPaid(true);
+      setInitialEmail(em);
       // Scroll to the session section after a short delay
       setTimeout(() => {
         document.getElementById('my-session')?.scrollIntoView({ behavior: 'smooth' });
