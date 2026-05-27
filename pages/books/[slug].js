@@ -28,8 +28,17 @@ function DownloadGate({ dark, label = 'Download Free' }) {
         body:    JSON.stringify({ firstName, lastName, email }),
       });
     } catch (_) {}
-    // Redirect to the interactive HTML form (has "download blank PDF" link too)
-    window.location.href = '/books/diagnostic';
+
+    // 1. Trigger the PDF download immediately
+    const link = document.createElement('a');
+    link.href = '/child-strategic-plan.pdf';
+    link.download = 'Child-Strategic-Plan-Diagnostic.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 2. Redirect to the fillable HTML form after a short delay
+    setTimeout(() => { window.location.href = '/books/diagnostic'; }, 1800);
   }
 
   const inputStyle = {
@@ -69,7 +78,7 @@ function DownloadGate({ dark, label = 'Download Free' }) {
       <input type="email" placeholder="Your email address" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
       <button type="submit" disabled={loading || !email.trim()}
         style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 7, padding: '11px 0', fontWeight: 700, fontSize: '0.9rem', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-        {loading ? 'One moment…' : '↓ Send me the template'}
+        {loading ? 'Downloading…' : 'Get the Free Template'}
       </button>
       <p style={{ fontSize: '0.72rem', color: dark ? 'rgba(253,248,240,0.35)' : '#9ca3af', margin: 0, lineHeight: 1.5 }}>
         We&apos;ll add you to Will&apos;s Ezra Edu list. No spam. Unsubscribe any time.
@@ -350,7 +359,7 @@ export default function BookPage({ product }) {
               </ul>
             </div>
             <div style={{ marginTop: '1.5rem', maxWidth: 280 }}>
-              <DownloadGate dark label="↓ Download Free Now" />
+              <DownloadGate dark label="Get the Free Template" />
             </div>
           </div>
 

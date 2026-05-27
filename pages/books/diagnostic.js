@@ -763,21 +763,32 @@ export default function DiagnosticPage() {
           <p style={{ fontSize: '0.78rem', color: '#bbb', marginTop: 8 }}>Forming. Gathering. Releasing. · Awakening Destiny Global · awakeningdestiny.global</p>
         </div>
 
-        {/* Print button bottom */}
-        <div className="no-print" style={{ textAlign: 'center', marginTop: '3rem' }}>
-          <button
-            onClick={() => window.print()}
-            style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 8, padding: '14px 40px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', fontFamily: 'inherit', marginRight: 12 }}
-          >
-            Print / Save as PDF
-          </button>
-          <a
-            href="/child-strategic-plan.pdf"
-            download
-            style={{ color: NAVY, fontSize: '0.88rem', textDecoration: 'underline' }}
-          >
-            Download blank PDF instead
-          </a>
+        {/* ── Bottom save + print reminder ── */}
+        <div className="no-print" style={{ background: '#eef2fa', border: `1px solid rgba(30,42,74,0.18)`, borderRadius: 12, padding: '1.5rem 1.75rem', marginTop: '2.5rem', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: NAVY, marginBottom: 4 }}>💾 Save your plan before you leave</p>
+            <p style={{ fontSize: '0.82rem', color: '#555', margin: 0, lineHeight: 1.6 }}>
+              {saveEmail
+                ? `Your plan is saved to ${saveEmail}. You can return any time and pick up where you left off.`
+                : 'Enter your email at the top of the page to save your answers to the cloud — access from any device, any time.'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {!saveEmail && (
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 7, padding: '10px 18px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Save my plan
+              </button>
+            )}
+            <button
+              onClick={() => window.print()}
+              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 7, padding: '10px 18px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              🖨 Save as PDF
+            </button>
+          </div>
         </div>
 
       </div>
