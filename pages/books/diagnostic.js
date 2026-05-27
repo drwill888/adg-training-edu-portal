@@ -805,8 +805,11 @@ export default function DiagnosticPage() {
           <p style={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 1rem' }}>
             Once you have completed this diagnostic, bring it into Ezra Edu and ask it to walk through the plan with you. Ezra will coach you through each enhancement, help you find what you cannot yet see, and adapt the plan as your child grows.
           </p>
-          <a href="https://ezra.edu.awakeningdestiny.global" style={{ color: GOLD, fontWeight: 700, fontSize: '0.9rem' }}>
-            ezra.edu.awakeningdestiny.global
+          <a
+            href={saveEmail ? `/books/child-education?email=${encodeURIComponent(saveEmail)}` : '/books/child-education'}
+            style={{ display: 'inline-block', background: NAVY, color: GOLD, padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', marginBottom: 12 }}
+          >
+            Open Ezra Coaching Session
           </a>
           <p style={{ fontSize: '0.82rem', color: '#999', marginTop: '1.5rem', fontStyle: 'italic' }}>
             This plan is a tool, not a verdict. The Spirit forms the carrier. The carrier forms the child. Ezra Edu walks alongside.
