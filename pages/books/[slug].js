@@ -165,7 +165,8 @@ export default function BookPage({ product }) {
     finally { setCL(false); }
   }
 
-  const price = `$${(product.priceUsd / 100).toFixed(0)}`;
+  const rawPrice = product.priceUsd / 100;
+  const price = rawPrice % 1 === 0 ? `$${rawPrice.toFixed(0)}` : `$${rawPrice.toFixed(2)}`;
 
   return (
     <>
@@ -326,7 +327,7 @@ export default function BookPage({ product }) {
             Two tools. One clear strategy.
           </h2>
           <p style={{ fontSize: '1rem', color: GRAY, lineHeight: 1.75, marginBottom: '2.5rem', textAlign: 'center', maxWidth: 520, margin: '0 auto 2.5rem' }}>
-            Your {price} gets you a planning template you keep forever and {product.daysAccess} days of AI coaching trained on the full manuscript.
+            The planning template is <strong>free</strong> — no purchase needed. The {product.daysAccess}-day AI coaching access is {price}, one time.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
             {/* Template */}
@@ -357,7 +358,7 @@ export default function BookPage({ product }) {
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 <span style={{ fontSize: 32 }}>✦</span>
                 <div>
-                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 3, fontFamily: 'Outfit, sans-serif' }}>{product.daysAccess}-Day Access</p>
+                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 3, fontFamily: 'Outfit, sans-serif' }}>{product.daysAccess}-Day Access — {price}</p>
                   <h3 style={{ color: NAVY, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3 }}>Ezra — Your AI Coaching Companion</h3>
                 </div>
               </div>
@@ -390,7 +391,7 @@ export default function BookPage({ product }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
               { n: '01', title: 'Download the diagnostic template.', body: 'Free — no purchase required. Open the Child Strategic Plan Diagnostic and work through it for your child. It takes 20–30 minutes and gives you a clear picture of who they are, how they learn, and what they need.' },
-              { n: '02', title: 'Purchase your 60-day coaching access.', body: `One-time payment of ${price}. You get immediate access to Ezra — your AI coaching companion trained on the full book. No subscriptions. No hidden fees.` },
+              { n: '02', title: `Get ${product.daysAccess}-day coaching access for ${price}.`, body: `One-time payment. No subscription. You get immediate access to Ezra — your AI coaching companion trained on the full book. No hidden fees.` },
               { n: '03', title: 'Bring your child to Ezra.', body: 'Open Ezra, share what you learned from the diagnostic, and ask your real questions. Ask about your specific child — not a hypothetical one. Ezra asks good questions, gives practical frameworks, and helps you build a strategy you can act on.' },
             ].map((step, i, arr) => (
               <div key={i} style={{ display: 'flex', gap: 24, alignItems: 'flex-start', padding: '2rem 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'left' }}>
@@ -441,8 +442,8 @@ export default function BookPage({ product }) {
             {[
               { icon: '✦', text: `Up to ${product.dailyLimit} coaching conversations per day` },
               { icon: '✦', text: `${product.daysAccess} full days of access from purchase` },
-              { icon: '📋', text: 'Child Strategic Plan Diagnostic — fillable PDF, yours to keep' },
               { icon: '✦', text: 'Coaching grounded in the book\'s 9 frameworks' },
+              { icon: '✦', text: 'Personalized to your specific child — not generic advice' },
               { icon: '✦', text: 'Secure access — starts immediately after payment' },
             ].map((item, i, arr) => (
               <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '9px 0', borderBottom: i < arr.length - 1 ? `1px solid ${LIGHT}` : 'none' }}>
