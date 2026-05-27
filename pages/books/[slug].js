@@ -499,7 +499,7 @@ export default function BookPage({ product }) {
       )}
 
       {/* ── Purchase ─────────────────────────────────────────────────────── */}
-      <section id="purchase" style={{ background: CREAM, padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <section id="purchase" style={{ background: CREAM, padding: '5rem 2rem', display: sessionVerified ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ maxWidth: 540, width: '100%', textAlign: 'center' }}>
           <p style={{ color: GOLD, textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.7rem', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif' }}>Get Started Today</p>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 400, color: NAVY, lineHeight: 1.2, marginBottom: '0.5rem' }}>
