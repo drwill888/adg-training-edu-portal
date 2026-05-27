@@ -374,7 +374,7 @@ export default function BookPage({ product }) {
               </ul>
               <a href="#purchase"
                 style={{ marginTop: 'auto', display: 'block', background: NAVY, color: GOLD, padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' }}>
-                Get Access — {price} →
+                💳 Purchase {price} Access
               </a>
             </div>
           </div>
@@ -454,6 +454,9 @@ export default function BookPage({ product }) {
           </div>
 
           <form onSubmit={handleCheckout} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: '0.82rem', color: GRAY, textAlign: 'left', margin: '0 0 4px', fontWeight: 600 }}>
+              Enter your details to proceed to secure payment:
+            </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <input
                 type="text" placeholder="First name"
@@ -472,11 +475,11 @@ export default function BookPage({ product }) {
               style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: '14px 16px', fontSize: 15, outline: 'none', color: NAVY, background: WHITE, width: '100%' }}
             />
             <button type="submit" disabled={checkoutLoading || !email.trim() || !firstName.trim() || !lastName.trim()}
-              style={{ background: NAVY, color: GOLD, border: 'none', borderRadius: 8, padding: '16px 0', fontWeight: 700, fontSize: 16, width: '100%', letterSpacing: '0.02em', cursor: checkoutLoading || !email.trim() ? 'not-allowed' : 'pointer', opacity: checkoutLoading || !email.trim() ? 0.7 : 1 }}>
-              {checkoutLoading ? 'Redirecting…' : `Get ${product.daysAccess}-Day Access — ${price} →`}
+              style={{ background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '16px 0', fontWeight: 700, fontSize: 16, width: '100%', letterSpacing: '0.02em', cursor: checkoutLoading || !email.trim() ? 'not-allowed' : 'pointer', opacity: checkoutLoading || !email.trim() ? 0.7 : 1 }}>
+              {checkoutLoading ? 'Redirecting to Stripe…' : `💳 Pay ${price} — Proceed to Checkout`}
             </button>
             <p style={{ fontSize: '0.78rem', color: '#9ca3af', textAlign: 'center', lineHeight: 1.5 }}>
-              Secure checkout via Stripe. Access begins immediately.
+              You will be redirected to Stripe to complete payment securely. Access begins immediately after.
             </p>
             <p style={{ fontSize: '0.72rem', color: '#c4c8cc', textAlign: 'center', lineHeight: 1.65 }}>
               Ezra is an AI coaching tool trained on Will Meier&apos;s book. It is not a licensed educator, therapist, or diagnostician. For learning disabilities, medical concerns, or clinical questions, please consult a qualified professional.
