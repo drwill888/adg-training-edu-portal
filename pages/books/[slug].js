@@ -318,62 +318,72 @@ export default function BookPage({ product }) {
       </section>
 
       {/* ── Two Tools ────────────────────────────────────────────────────── */}
-      <section style={{ background: CREAM, padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40 }}>
-        <div style={{ maxWidth: 800, width: '100%' }}>
+      <section style={{ background: CREAM, padding: '5rem 2rem' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
           <p style={{ color: GOLD, textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.7rem', marginBottom: '1.25rem', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
             What You Get
           </p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 400, color: NAVY, lineHeight: 1.2, marginBottom: '0.75rem', textAlign: 'center' }}>
-            Two tools. One clear strategy.
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 400, color: NAVY, lineHeight: 1.2, marginBottom: '2.5rem', textAlign: 'center' }}>
+            Two separate tools. Independent of each other.
           </h2>
-          <p style={{ fontSize: '1rem', color: GRAY, lineHeight: 1.75, marginBottom: '2.5rem', textAlign: 'center', maxWidth: 520, margin: '0 auto 2.5rem' }}>
-            The planning template is <strong>free</strong> — no purchase needed. The {product.daysAccess}-day AI coaching access is {price}, one time.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-            {/* Template */}
-            <div style={{ background: NAVY, borderRadius: 16, padding: '2rem', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <span style={{ fontSize: 32 }}>📋</span>
-                <div>
-                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 3, fontFamily: 'Outfit, sans-serif' }}>Included Free</p>
-                  <h3 style={{ color: WHITE, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3 }}>Child Strategic Plan Diagnostic</h3>
-                </div>
-              </div>
-              <p style={{ color: 'rgba(253,248,240,0.68)', fontSize: '0.88rem', lineHeight: 1.75 }}>
-                A fillable PDF built to help you think clearly about your child before you start coaching. Works through their learning style, strengths, struggles, interests, and education environment. Fill it out once — use it every session.
-              </p>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {['Map how your child actually learns', 'Identify gifts and strengths early', 'Clarify your goals as a parent', 'Build a strategy you can act on Monday', 'Reuse for every child you have'].map((t, i) => (
-                  <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.84rem', color: 'rgba(253,248,240,0.7)' }}>
-                    <span style={{ color: GOLD, flexShrink: 0, marginTop: 1 }}>✦</span>{t}
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: 'auto' }}>
-                <DownloadGate dark label="↓ Download Free Now" />
-              </div>
+
+          {/* ── Tool 1: FREE ── */}
+          <div style={{ background: NAVY, borderRadius: 16, padding: '2rem 2.25rem', marginBottom: 16 }}>
+            <div style={{ display: 'inline-block', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.2em', padding: '5px 14px', borderRadius: 100, marginBottom: '1.25rem', fontFamily: 'Outfit, sans-serif' }}>
+              ✓ FREE — No Credit Card. No Purchase.
             </div>
-            {/* Ezra */}
-            <div style={{ background: WHITE, border: `2px solid rgba(200,169,81,0.3)`, borderRadius: 16, padding: '2rem', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <span style={{ fontSize: 32 }}>✦</span>
-                <div>
-                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 3, fontFamily: 'Outfit, sans-serif' }}>{product.daysAccess}-Day Access — {price}</p>
-                  <h3 style={{ color: NAVY, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3 }}>Ezra — Your AI Coaching Companion</h3>
-                </div>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 280px' }}>
+                <h3 style={{ color: WHITE, fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.3, marginBottom: 10 }}>
+                  📋 Child Strategic Plan Diagnostic
+                </h3>
+                <p style={{ color: 'rgba(253,248,240,0.68)', fontSize: '0.88rem', lineHeight: 1.8, margin: 0 }}>
+                  A fillable form built to help you think clearly about your child. Works through their learning style, strengths, struggles, interests, and education environment. Fill it out once — use it every session.
+                </p>
               </div>
-              <p style={{ color: '#374151', fontSize: '0.88rem', lineHeight: 1.75 }}>
-                Ezra is trained on the full manuscript of Will&apos;s book. Ask him about your specific child — their age, how they learn, what they love, where they get stuck — and he gives you coaching grounded in the book&apos;s frameworks. Not generic advice. Not a chatbot. A coaching conversation built on something real.
-              </p>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {[`Up to ${product.dailyLimit} conversations per day`, `${product.daysAccess} days of access from purchase`, 'Personalized — not one-size-fits-all', 'Grounded in the book\'s 9 frameworks', 'Available any time, any device'].map((t, i) => (
-                  <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.84rem', color: '#374151' }}>
-                    <span style={{ color: GOLD, flexShrink: 0, marginTop: 1 }}>✦</span>{t}
+              <ul style={{ listStyle: 'none', flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0 }}>
+                {['Map how your child actually learns', 'Identify gifts and strengths early', 'Clarify your goals as a parent', 'Build a strategy you can act on Monday', 'Reuse for every child you have'].map((t, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.84rem', color: 'rgba(253,248,240,0.75)' }}>
+                    <span style={{ color: GOLD, flexShrink: 0, marginTop: 2 }}>✦</span>{t}
                   </li>
                 ))}
               </ul>
+            </div>
+            <div style={{ marginTop: '1.5rem', maxWidth: 280 }}>
+              <DownloadGate dark label="↓ Download Free Now" />
+            </div>
+          </div>
+
+          {/* ── Separator ── */}
+          <div style={{ textAlign: 'center', padding: '10px 0', color: GRAY, fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', fontFamily: 'Outfit, sans-serif' }}>
+            — separate purchase below —
+          </div>
+
+          {/* ── Tool 2: PAID ── */}
+          <div style={{ background: WHITE, border: `2px solid ${GOLD}`, borderRadius: 16, padding: '2rem 2.25rem', marginTop: 16 }}>
+            <div style={{ display: 'inline-block', background: GOLD, color: NAVY, fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.2em', padding: '5px 14px', borderRadius: 100, marginBottom: '1.25rem', fontFamily: 'Outfit, sans-serif' }}>
+              💳 {price} One-Time Purchase — Not Included Free
+            </div>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 280px' }}>
+                <h3 style={{ color: NAVY, fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.3, marginBottom: 10 }}>
+                  ✦ Ezra — Your AI Coaching Companion
+                </h3>
+                <p style={{ color: '#374151', fontSize: '0.88rem', lineHeight: 1.8, margin: 0 }}>
+                  Ezra is trained on the full manuscript of Will&apos;s book. Ask him about your specific child and he gives you coaching grounded in the book&apos;s frameworks. Not generic advice. A coaching conversation built on something real.
+                </p>
+              </div>
+              <ul style={{ listStyle: 'none', flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0 }}>
+                {[`Up to ${product.dailyLimit} conversations per day`, `${product.daysAccess} days of access from purchase`, 'Personalized — not one-size-fits-all', "Grounded in the book's 9 frameworks", 'Available any time, any device'].map((t, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.84rem', color: '#374151' }}>
+                    <span style={{ color: GOLD, flexShrink: 0, marginTop: 2 }}>✦</span>{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
               <a href="#purchase"
-                style={{ marginTop: 'auto', display: 'block', background: NAVY, color: GOLD, padding: '12px 0', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' }}>
+                style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '12px 28px', borderRadius: 8, fontWeight: 800, fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' }}>
                 💳 Purchase {price} Access
               </a>
             </div>
