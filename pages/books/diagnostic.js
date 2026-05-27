@@ -490,6 +490,14 @@ export default function DiagnosticPage() {
           {cloudStatus === 'saved'   && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Saved</span>}
           {cloudStatus === 'loaded'  && <span style={{ color: GOLD, fontSize: '0.78rem' }}>✓ Plan loaded</span>}
           {cloudStatus === 'error'   && <span style={{ color: '#f87171', fontSize: '0.78rem' }}>Save failed</span>}
+          {saveEmail && (
+            <a
+              href={`/books/child-education?email=${encodeURIComponent(saveEmail)}`}
+              style={{ background: GOLD, color: NAVY, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', borderRadius: 6, padding: '6px 14px', whiteSpace: 'nowrap' }}
+            >
+              ← My coaching session
+            </a>
+          )}
           <a
             href="/child-strategic-plan.pdf"
             download
