@@ -400,7 +400,7 @@ export default function CalledToCarryLanding() {
             <Link href="/called-to-carry/founders/apply">Apply — Founders Cohort</Link>
             <a href="mailto:will@awakeningdestiny.global">Contact</a>
           </nav>
-          <p className={s.footerLegal}>&copy; {new Date().getFullYear()} Awakening Destiny Global. All rights reserved.</p>
+          <p className={s.footerLegal}>&copy; {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.</p>
         </div>
       </footer>
     </div>

@@ -398,6 +398,7 @@ export default function SprintPage({ sprintOpen }) {
         <footer className={styles.footer}>
           <div className={styles.container}>
             <p>© {new Date().getFullYear()} Awakening Destiny Global · All Rights Reserved</p>
+            <p style={{ fontSize: '0.72rem', opacity: 0.6, marginTop: 6, lineHeight: 1.6 }}>All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.</p>
             <div className={styles.footerLinks}>
               <Link href="/">Home</Link>
               <Link href="/called-to-carry/assessment">Assessment</Link>

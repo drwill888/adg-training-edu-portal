@@ -139,6 +139,14 @@ export default function AdvisoryPage() {
             </div>
           )}
         </section>
+
+      {/* ── Footer ── */}
+      <footer style={{ background: '#010f1f', borderTop: '1px solid rgba(253,210,13,0.1)', padding: '2rem 2rem', textAlign: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', lineHeight: 1.7, maxWidth: 680, margin: '0 auto' }}>
+          &copy; {new Date().getFullYear()} Awakening Destiny Global. All rights reserved.{' '}
+          All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
+      </footer>
       </div>
     </>
   );

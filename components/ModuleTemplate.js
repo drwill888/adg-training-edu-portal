@@ -256,7 +256,7 @@ export default function ModuleTemplate({ config }) {
   var payStatus = usePaymentStatus();
   var paid      = payStatus.paid;
   var payLoading= payStatus.loading;
-  var isFree    = moduleNum === 0;
+  var isFree    = moduleNum === 0 || moduleNum === 1;
   var STEPS     = moduleNum === 0 ? STEPS_INTRO : STEPS_DEFAULT;
 
   var stepS = useState(0);       var step = stepS[0];           var setStep = stepS[1];
@@ -1062,7 +1062,9 @@ export default function ModuleTemplate({ config }) {
             <Button onClick={function() { setStep(step + 1); scrollTop(); }}>Next</Button>
           )}
         </div>
-        <p className="text-center text-xs mt-1.5" style={{ color: "#4a5568" }}>© 2026 Awakening Destiny Global</p>
+        <p className="text-center text-xs mt-1.5" style={{ color: "#4a5568" }}>
+          © {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
       </div>
         <TrainingChat />
     </div>
