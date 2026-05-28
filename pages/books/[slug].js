@@ -663,6 +663,7 @@ export default function BookPage({ product }) {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
                   {childPlans.map(p => (
                     <button key={p.child_name}
+                      type="button"
                       onClick={() => setActiveChild(p.child_name)}
                       style={{
                         background: activeChild === p.child_name ? GOLD : 'rgba(255,255,255,0.07)',
