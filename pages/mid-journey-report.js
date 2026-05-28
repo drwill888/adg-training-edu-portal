@@ -126,6 +126,9 @@ export default function MidJourneyReportPage() {
               month: 'long', day: 'numeric', year: 'numeric'
             })} · Awakening Destiny Global
           </p>
+          <p style={{ fontSize: '0.7rem', opacity: 0.35, marginTop: '0.75rem', lineHeight: 1.6 }}>
+            © {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+          </p>
         </div>
       </main>
     </div>

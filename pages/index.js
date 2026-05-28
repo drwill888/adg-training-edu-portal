@@ -551,7 +551,7 @@ export default function LandingPage() {
                 <a href="/login">Access Course</a>
               </div>
             </div>
-            <span className="footer-copy">© 2026 Awakening Destiny Global · 5cblueprint.awakeningdestiny.global · All Rights Reserved</span>
+            <span className="footer-copy">© {new Date().getFullYear()} Awakening Destiny Global · 5cblueprint.awakeningdestiny.global · All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.</span>
           </div>
         </footer>
 

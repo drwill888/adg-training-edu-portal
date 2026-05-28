@@ -510,6 +510,9 @@ export default function AssessmentPage() {
           )}
         </div>
       </div>
+      <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(253,248,240,0.3)', padding: '0 1.5rem 2rem', lineHeight: 1.6 }}>
+        © {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+      </p>
     </>
   );
 }

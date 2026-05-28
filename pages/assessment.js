@@ -185,6 +185,9 @@ useEffect(() => {
   const [gateError, setGateError] = useState('');
   const [resultSaved, setResultSaved] = useState(false);
 
+  // ─── EMAIL CONSENT (CHANGE 1 of 3) ───
+  const [emailConsent, setEmailConsent] = useState(false);
+
   const totalQuestions = 25;
   const answeredCount = Object.keys(answers).length;
   const progressPct = Math.round((answeredCount / totalQuestions) * 100);
@@ -239,7 +242,9 @@ useEffect(() => {
 
     setResults({ scores, totalScore, strongest, gap });
 
-    // ─── SAVE TO DATABASE ───
+    // ─── SAVE TO DATABASE (CHANGE 2 of 3) ───
+    // email_consent and consent_timestamp record the user's agreement
+    // at the intro screen for GDPR audit trail purposes.
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -249,6 +254,8 @@ useEffect(() => {
           dimension_scores: scores,
           total_score: totalScore,
           max_possible: 125,
+          email_consent: true,
+          consent_timestamp: new Date().toISOString(),
         });
         setResultSaved(true);
       }
@@ -360,7 +367,51 @@ useEffect(() => {
                 </div>
               </div>
 
-              <button onClick={() => setScreen('assessment')} style={btnPrimary}>Begin Assessment</button>
+              {/* ─── EMAIL CONSENT (CHANGE 3 of 3) ─── */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                marginBottom: '1.5rem',
+                padding: '1.25rem',
+                background: 'rgba(253,210,13,0.04)',
+                border: '1px solid rgba(253,210,13,0.2)',
+              }}>
+                <input
+                  id="emailConsent"
+                  type="checkbox"
+                  checked={emailConsent}
+                  onChange={e => setEmailConsent(e.target.checked)}
+                  style={{
+                    marginTop: '3px',
+                    accentColor: '#FDD20D',
+                    width: 16,
+                    height: 16,
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                  }}
+                />
+                <label htmlFor="emailConsent" style={{
+                  fontSize: '0.82rem',
+                  lineHeight: 1.6,
+                  color: 'rgba(253,248,240,0.65)',
+                  cursor: 'pointer',
+                }}>
+                  By taking this assessment, I agree to receive emails from Awakening Destiny Global — including insights, training updates, and resources to support my Kingdom assignment. You may unsubscribe at any time.
+                </label>
+              </div>
+
+              <button
+                onClick={() => setScreen('assessment')}
+                disabled={!emailConsent}
+                style={{
+                  ...btnPrimary,
+                  opacity: emailConsent ? 1 : 0.45,
+                  cursor: emailConsent ? 'pointer' : 'not-allowed',
+                }}
+              >
+                Begin Assessment
+              </button>
             </div>
           )}
 
@@ -606,6 +657,9 @@ useEffect(() => {
           )}
 
         </div>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(253,248,240,0.3)', marginTop: '3rem', padding: '0 1.5rem 2rem', lineHeight: 1.6 }}>
+          © {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
       </div>
     </>
   );

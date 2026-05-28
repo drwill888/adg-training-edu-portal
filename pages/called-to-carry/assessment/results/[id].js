@@ -158,6 +158,9 @@ export default function AssessmentResults({ submission }) {
           A copy of your results has been sent to your email.{' '}
           <Link href="/called-to-carry" style={styles.footerLink}>Return to Called to Carry</Link>
         </p>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(253,248,240,0.25)', marginTop: '1.5rem', lineHeight: 1.6 }}>
+          © {new Date().getFullYear()} Awakening Destiny Global. All rights reserved. All content, frameworks, materials, and AI tools are proprietary intellectual property of Awakening Destiny Global and may not be reproduced, distributed, or used without express written permission.
+        </p>
       </main>
     </div>
   );
