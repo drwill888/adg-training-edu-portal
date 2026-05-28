@@ -44,13 +44,15 @@ export default async function handler(req, res) {
     }
   }
 
+  const key = process.env.STRIPE_SECRET_KEY || '';
   return res.status(200).json({
-    message:      'Ready. Use this code at Stripe checkout for 100% off.',
-    coupon_id:    coupon.id,
-    promo_code:   promo.code,
-    promo_active: promo.active,
-    percent_off:  coupon.percent_off,
-    max_uses:     coupon.max_redemptions,
+    message:        'Ready. Use this code at Stripe checkout for 100% off.',
+    stripe_mode:    key.startsWith('sk_live') ? 'LIVE' : key.startsWith('sk_test') ? 'TEST' : 'UNKNOWN',
+    coupon_id:      coupon.id,
+    promo_code:     promo.code,
+    promo_active:   promo.active,
+    percent_off:    coupon.percent_off,
+    max_uses:       coupon.max_redemptions,
     times_redeemed: coupon.times_redeemed,
   });
 }
