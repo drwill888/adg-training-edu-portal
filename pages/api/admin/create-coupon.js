@@ -27,19 +27,23 @@ export default async function handler(req, res) {
     }
   }
 
-  // Step 2: Ensure promo code exists (list first, create if missing)
-  const existing = await stripe.promotionCodes.list({ coupon: coupon.id, limit: 10 });
-  let promo = existing.data.find(p => p.code === 'ADGTEST100');
-
-  if (!promo) {
-    try {
-      promo = await stripe.promotionCodes.create({
-        coupon: coupon.id,
-        code:   'ADGTEST100',
-        active: true,
-      });
-    } catch (err) {
-      // Code might exist but be attached to a different coupon — list all with this code
+  // Step 2: Ensure promo code exists — try create first, fall back to find
+  let promo;
+  try {
+    promo = await stripe.promotionCodes.create({
+      coupon: coupon.id,
+      code:   'ADGTEST100',
+      active: true,
+    });
+  } catch (err) {
+    if (err.code === 'resource_already_exists') {
+      // Find it by listing all promo codes (SDK version doesn't support coupon filter)
+      const all = await stripe.promotionCodes.list({ limit: 100 });
+      promo = all.data.find(p => p.code === 'ADGTEST100');
+      if (!promo) {
+        return res.status(500).json({ error: 'ADGTEST100 exists but could not be retrieved' });
+      }
+    } else {
       return res.status(500).json({ error: `Promo code error: ${err.message}` });
     }
   }
