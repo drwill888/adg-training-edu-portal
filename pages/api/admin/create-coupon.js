@@ -9,39 +9,48 @@ export default async function handler(req, res) {
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+  // Step 1: Ensure coupon exists
+  let coupon;
   try {
-    // Create a 100% off, single-use coupon
-    const coupon = await stripe.coupons.create({
-      percent_off:  100,
-      duration:     'once',
-      name:         'ADG Internal Test — 100% Off',
-      id:           'ADG-TEST-100',
-      max_redemptions: 10,   // limits to 10 uses so it can't leak into prod
-    });
-
-    // Also create a promotion code so it's usable at checkout
-    const promo = await stripe.promotionCodes.create({
-      coupon: coupon.id,
-      code:   'ADGTEST100',
-      active: true,
-    });
-
-    return res.status(200).json({
-      message:       'Coupon + promo code created. Enter this at Stripe checkout.',
-      coupon_id:     coupon.id,
-      promo_code:    promo.code,
-      percent_off:   coupon.percent_off,
-      max_uses:      coupon.max_redemptions,
+    coupon = await stripe.coupons.create({
+      percent_off:     100,
+      duration:        'once',
+      name:            'ADG Internal Test — 100% Off',
+      id:              'ADG-TEST-100',
+      max_redemptions: 10,
     });
   } catch (err) {
-    // If coupon already exists, just fetch the promo code
     if (err.code === 'resource_already_exists') {
-      return res.status(200).json({
-        message:    'Coupon already exists.',
-        promo_code: 'ADGTEST100',
-        note:       'Use this code at Stripe checkout for 100% off.',
-      });
+      coupon = await stripe.coupons.retrieve('ADG-TEST-100');
+    } else {
+      return res.status(500).json({ error: `Coupon error: ${err.message}` });
     }
-    return res.status(500).json({ error: err.message });
   }
+
+  // Step 2: Ensure promo code exists (list first, create if missing)
+  const existing = await stripe.promotionCodes.list({ coupon: coupon.id, limit: 10 });
+  let promo = existing.data.find(p => p.code === 'ADGTEST100');
+
+  if (!promo) {
+    try {
+      promo = await stripe.promotionCodes.create({
+        coupon: coupon.id,
+        code:   'ADGTEST100',
+        active: true,
+      });
+    } catch (err) {
+      // Code might exist but be attached to a different coupon — list all with this code
+      return res.status(500).json({ error: `Promo code error: ${err.message}` });
+    }
+  }
+
+  return res.status(200).json({
+    message:      'Ready. Use this code at Stripe checkout for 100% off.',
+    coupon_id:    coupon.id,
+    promo_code:   promo.code,
+    promo_active: promo.active,
+    percent_off:  coupon.percent_off,
+    max_uses:     coupon.max_redemptions,
+    times_redeemed: coupon.times_redeemed,
+  });
 }
