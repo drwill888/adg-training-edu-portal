@@ -16,9 +16,7 @@ export default async function handler(req, res) {
   if (!product) return res.status(404).json({ error: `Unknown product: ${productSlug}` });
 
   try {
-    // Use test key if present (set STRIPE_SECRET_KEY_TEST in Vercel to test with 4242 cards)
-    const stripeKey = process.env.STRIPE_SECRET_KEY_TEST || process.env.STRIPE_SECRET_KEY;
-    const stripe = new Stripe(stripeKey);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const origin = req.headers.origin || 'https://5cblueprint.awakeningdestiny.global';
 
     const session = await stripe.checkout.sessions.create({
