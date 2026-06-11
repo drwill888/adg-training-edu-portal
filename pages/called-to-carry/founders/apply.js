@@ -14,6 +14,7 @@ export default function FoundersApply() {
     phone: '', archetype: '', why: '',
     building: '', referral: '',
   });
+  const [smsConsent, setSmsConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,7 +35,7 @@ export default function FoundersApply() {
       const res = await fetch('/api/called-to-carry/founders/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, smsConsent }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
@@ -95,6 +96,18 @@ export default function FoundersApply() {
               <div>
                 <label style={labelStyle}>Phone *</label>
                 <input required type="tel" value={form.phone} onChange={update('phone')} placeholder="+1 (555) 000-0000" style={inputStyle} />
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <input
+                    id="smsConsent"
+                    type="checkbox"
+                    checked={smsConsent}
+                    onChange={e => setSmsConsent(e.target.checked)}
+                    style={{ marginTop: 3, flexShrink: 0, cursor: 'pointer' }}
+                  />
+                  <label htmlFor="smsConsent" style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5, cursor: 'pointer' }}>
+                    By providing your phone number, you agree to receive text messages from Awakening Destiny Global (ADG), including ministry updates, event reminders, and important announcements. Message and data rates may apply. Message frequency varies. Reply STOP to unsubscribe at any time. Reply HELP for help.
+                  </label>
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>Your Called to Carry Archetype</label>
