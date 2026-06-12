@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { firstName, lastName, email, phone, archetype, why, building, referral, smsConsent } = req.body;
+  const { firstName, lastName, email, phone, archetype, why, building, referral, smsConsent, emailConsent } = req.body;
 
   if (!firstName || !lastName || !email || !phone || !why) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -37,6 +37,8 @@ export default async function handler(req, res) {
       business_or_ministry: building || null,
       sms_consent: Boolean(smsConsent),
       sms_consent_timestamp: smsConsent ? new Date().toISOString() : null,
+      email_consent: Boolean(emailConsent),
+      email_consent_timestamp: emailConsent ? new Date().toISOString() : null,
       status: 'pending',
       tier: 'sprint',
       approval_token: approvalToken,

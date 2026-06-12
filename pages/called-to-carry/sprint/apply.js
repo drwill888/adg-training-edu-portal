@@ -14,6 +14,7 @@ export default function SprintApply() {
     building: '', referral: '',
   });
   const [smsConsent, setSmsConsent] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,7 +35,7 @@ export default function SprintApply() {
       const res = await fetch('/api/called-to-carry/sprint/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, smsConsent }),
+        body: JSON.stringify({ ...form, smsConsent, emailConsent }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
@@ -91,6 +92,18 @@ export default function SprintApply() {
               <div>
                 <label style={labelStyle}>Email Address *</label>
                 <input required type="email" value={form.email} onChange={update('email')} placeholder="your@email.com" style={inputStyle} />
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <input
+                    id="emailConsent"
+                    type="checkbox"
+                    checked={emailConsent}
+                    onChange={e => setEmailConsent(e.target.checked)}
+                    style={{ marginTop: 3, flexShrink: 0, cursor: 'pointer' }}
+                  />
+                  <label htmlFor="emailConsent" style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5, cursor: 'pointer' }}>
+                    I agree to receive email communications from Awakening Destiny Global (ADG), including ministry updates, program announcements, and event information. You may unsubscribe at any time.
+                  </label>
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>Phone *</label>
