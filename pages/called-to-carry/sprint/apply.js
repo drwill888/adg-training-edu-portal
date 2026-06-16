@@ -101,7 +101,7 @@ export default function SprintApply() {
                     style={{ marginTop: 3, flexShrink: 0, cursor: 'pointer' }}
                   />
                   <label htmlFor="emailConsent" style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5, cursor: 'pointer' }}>
-                    I agree to receive email communications from Awakening Destiny Global (ADG), including ministry updates, program announcements, and event information. You may unsubscribe at any time.
+                    I agree to receive email communications from Awakening Destiny Global (ADG), including ministry updates, program announcements, and event information. You may unsubscribe at any time. View our <a href="https://awakeningdestiny.global/privacy-policy/" target="_blank" rel="noopener noreferrer" style={{ color: '#021A35' }}>Privacy Policy</a>.
                   </label>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function SprintApply() {
                     style={{ marginTop: 3, flexShrink: 0, cursor: 'pointer' }}
                   />
                   <label htmlFor="smsConsent" style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.5, cursor: 'pointer' }}>
-                    By providing your phone number, you agree to receive text messages from Awakening Destiny Global (ADG), including ministry updates, event reminders, and important announcements. Message and data rates may apply. Message frequency varies. Reply STOP to unsubscribe at any time. Reply HELP for help.
+                    By providing your phone number, you agree to receive text messages from Awakening Destiny Global (ADG), including ministry updates, event reminders, and important announcements. Message and data rates may apply. Message frequency varies. Reply STOP to unsubscribe at any time. Reply HELP for help. View our <a href="https://awakeningdestiny.global/privacy-policy/" target="_blank" rel="noopener noreferrer" style={{ color: '#021A35' }}>Privacy Policy</a>.
                   </label>
                 </div>
               </div>
