@@ -4,6 +4,19 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const nextConfig = {
   reactStrictMode: true,
 
+  // pages/books/diagnostic.js was renamed to pages/books/reflection.js
+  // (dropping the clinical-sounding "diagnostic" naming). Redirect keeps
+  // any already-saved bookmarks or purchase-confirmation links working.
+  async redirects() {
+    return [
+      {
+        source: '/books/diagnostic',
+        destination: '/books/reflection',
+        permanent: false,
+      },
+    ];
+  },
+
   // Subdomain routing for Called to Carry.
   // calledtocarry.awakeningdestiny.global/<path> → pages/called-to-carry/<path>
   // Two rules handle nested + top-level paths. Exclusions keep /api, /_next,

@@ -1,5 +1,5 @@
-// pages/books/diagnostic.js
-// Fillable HTML version of the Child Strategic Plan Diagnostic.
+// pages/books/reflection.js
+// Fillable HTML version of the Child Strategic Plan.
 // Auto-expanding textareas, cloud save/load by email, AI summary (paid).
 
 import Head from 'next/head';
@@ -354,7 +354,7 @@ function ReviewTable({ values, onChange }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-export default function DiagnosticPage() {
+export default function ReflectionPage() {
   const [values, setValues]             = useState({});
   const [saveEmail, setSaveEmail]       = useState('');
   const [cloudStatus, setCloudStatus]   = useState(''); // 'saving' | 'saved' | 'loaded' | 'error'
