@@ -15,7 +15,7 @@ const STORAGE_KEY = 'ezra-edu-diagnostic-v1';
 const PRODUCT_SLUG = 'child-education';
 
 // ─── Auto-resize textarea ───────────────────────────────────────────────────
-function Field({ name, label, value, onChange, rows = 3 }) {
+function Field({ name, label, value, onChange, rows = 3, placeholder }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -38,6 +38,7 @@ function Field({ name, label, value, onChange, rows = 3 }) {
         className="screen-field"
         rows={rows}
         value={value || ''}
+        placeholder={placeholder}
         onChange={(e) => onChange(name, e.target.value)}
         style={{
           width: '100%', boxSizing: 'border-box',
@@ -65,6 +66,45 @@ function Field({ name, label, value, onChange, rows = 3 }) {
         }}
       >
         {value || ''}
+      </div>
+    </div>
+  );
+}
+
+// ─── Select (used for the age-band dropdown so no exact birthdate/age is stored) ─
+function SelectField({ name, label, value, onChange, options }) {
+  const selectedLabel = options.find(o => o.value === value)?.label || '';
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      {label && (
+        <label style={{ display: 'block', fontSize: '0.9rem', color: BODY, fontWeight: 500, marginBottom: 6, lineHeight: 1.5 }}>
+          {label}
+        </label>
+      )}
+      <select
+        className="screen-field"
+        value={value || ''}
+        onChange={(e) => onChange(name, e.target.value)}
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          border: `1px solid #d0d0d0`, borderRadius: 6,
+          padding: '10px 12px', fontSize: '0.9rem',
+          fontFamily: 'inherit', color: BODY, background: FIELD_BG,
+          outline: 'none',
+        }}
+      >
+        <option value="">Select a range…</option>
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <div
+        className="print-field"
+        style={{
+          border: `1px solid #bbb`, borderRadius: 6,
+          padding: '10px 12px', fontSize: '0.9rem',
+          lineHeight: 1.6, color: BODY, background: 'white',
+        }}
+      >
+        {selectedLabel}
       </div>
     </div>
   );
@@ -465,15 +505,25 @@ export default function DiagnosticPage() {
     }
   }
 
-  const F = (name, label, rows) => <Field name={name} label={label} value={values[name]} onChange={handleChange} rows={rows || 3} />;
+  const F = (name, label, rows, placeholder) => <Field name={name} label={label} value={values[name]} onChange={handleChange} rows={rows || 3} placeholder={placeholder} />;
   const CB = (name, label) => <Check name={name} label={label} checked={values[name]} onChange={handleChange} />;
   const CG = (prefix, options, namePrefix) => <CheckGroup prefix={prefix} options={options} values={values} onChange={handleChange} namePrefix={namePrefix} />;
   const NF = (count, label, namePrefix, rows) => <NumberedFields count={count} label={label} namePrefix={namePrefix} values={values} onChange={handleChange} />;
+  const SG = (name, label, options) => <SelectField name={name} label={label} value={values[name]} onChange={handleChange} options={options} />;
+
+  const AGE_BAND_OPTIONS = [
+    'Younger than 6',
+    '6–8 (early elementary)',
+    '9–11 (upper elementary)',
+    '12–14 (middle school)',
+    '15–18 (high school)',
+    'Prefer not to specify',
+  ].map(label => ({ value: label, label }));
 
   return (
     <>
       <Head>
-        <title>Child Strategic Plan Diagnostic — Ezra Edu</title>
+        <title>Child Strategic Plan — Ezra Edu</title>
         <meta name="robots" content="noindex" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -503,7 +553,7 @@ export default function DiagnosticPage() {
       <div className="no-print" style={{ background: NAVY, padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <span style={{ color: GOLD, fontWeight: 700, fontSize: '0.9rem', fontFamily: 'Outfit, sans-serif', letterSpacing: '0.08em' }}>EZRA EDU</span>
-          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>Child Strategic Plan Diagnostic</span>
+          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>Child Strategic Plan</span>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           {cloudStatus === 'saving'  && <span style={{ color: 'rgba(200,164,90,0.7)', fontSize: '0.78rem' }}>Saving…</span>}
@@ -544,7 +594,7 @@ export default function DiagnosticPage() {
         <div style={{ textAlign: 'center', paddingBottom: '2rem', borderBottom: `2px solid ${NAVY}`, marginBottom: '2rem' }}>
           <p style={{ color: GOLD, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>Ezra Edu</p>
           <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', fontWeight: 600, color: NAVY, marginBottom: 8 }}>
-            Child Strategic Plan Diagnostic
+            Child Strategic Plan
           </h1>
           <p style={{ fontSize: '0.88rem', color: '#555', marginBottom: 4 }}>A formation-based equipping plan grounded in the nine enhancements</p>
           <p style={{ fontSize: '0.82rem', color: '#888' }}>Companion to <em>How We Educate Children and Develop Talent</em> · Will &amp; Donna Meier</p>
@@ -597,7 +647,7 @@ export default function DiagnosticPage() {
 
         {/* How to Use */}
         <div className="section-block" style={{ marginBottom: '2rem' }}>
-          <H1>How to Use This Diagnostic</H1>
+          <H1>How to Use This Plan</H1>
           <Body><strong>Education is never neutral. Information is not formation. See the child before you shape the child.</strong></Body>
           <Body>This is a strategic plan, not a worksheet. It maps the nine enhancements from <em>How We Educate Children and Develop Talent</em> onto one specific child you are forming. You can complete it alone, with a co-parent or co-teacher, or alongside Ezra Edu — the AI coaching agent trained on the book.</Body>
           <Body>Three convictions shape this work:</Body>
@@ -612,8 +662,16 @@ export default function DiagnosticPage() {
         {/* Child Snapshot */}
         <div className="section-block" style={{ marginBottom: '2rem' }}>
           <H1>Child Snapshot</H1>
-          {F('child_name', "Child's Name:")}
-          {F('age_grade', 'Age and Grade:')}
+
+          {/* Privacy notice — this plan is specifically about one child, so be explicit */}
+          <div className="no-print" style={{ background: '#FFF3CD', border: '1px solid #f0d78c', borderRadius: 8, padding: '0.9rem 1.1rem', marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '0.82rem', color: NAVY, lineHeight: 1.6, margin: 0 }}>
+              <strong>For your child's privacy:</strong> please don't enter their full name, birth date, school name, home address, medical or diagnostic details (ADHD, IEP/504, disabilities, trauma history), immigration status, photos, or the names of teachers or other children. Use a label like &ldquo;Child 1&rdquo; or a nickname below — whatever you enter may be shared with Ezra Edu's AI coaching to generate a summary, so keep it general.
+            </p>
+          </div>
+
+          {F('child_name', 'What do you call this child in your notes?', 1, 'e.g. "Child 1" or a nickname — not their full name')}
+          {SG('age_grade', 'Age range:', AGE_BAND_OPTIONS)}
           {CG('Primary Setting:', ['Homeschool', 'Private', 'Public', 'Co-op', 'Other'], 'setting')}
           {F('lead_adults', 'Lead Adult(s):')}
           {F('plan_started', 'Plan Started:')}
@@ -834,7 +892,7 @@ export default function DiagnosticPage() {
         <div style={{ borderTop: `1px solid ${RULE}`, paddingTop: '2rem', textAlign: 'center' }}>
           <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '1.1rem', color: NAVY, fontWeight: 600, marginBottom: 8 }}>Continue with Ezra Edu</p>
           <p style={{ fontSize: '0.88rem', color: '#555', lineHeight: 1.75, maxWidth: 520, margin: '0 auto 1rem' }}>
-            Once you have completed this diagnostic, bring it into Ezra Edu and ask it to walk through the plan with you. Ezra will coach you through each enhancement, help you find what you cannot yet see, and adapt the plan as your child grows.
+            Once you have completed this plan, bring it into Ezra Edu and ask it to walk through it with you. Ezra will coach you through each enhancement, help you find what you cannot yet see, and adapt the plan as your child grows.
           </p>
           <a
             href={saveEmail ? `/books/child-education?email=${encodeURIComponent(saveEmail)}` : '/books/child-education'}
