@@ -29,7 +29,7 @@ function DownloadGate({ dark, label = 'Download Free' }) {
       });
     } catch (_) {}
 
-    // Redirect to the fillable HTML diagnostic form with email pre-filled
+    // Redirect to the fillable HTML reflection form with email pre-filled
     window.location.href = `/books/reflection?email=${encodeURIComponent(email.trim().toLowerCase())}`;
   }
 
@@ -46,11 +46,11 @@ function DownloadGate({ dark, label = 'Download Free' }) {
       <span style={{ color: GOLD, fontSize: 20 }}>✓</span>
       <span style={{ color: dark ? 'rgba(253,248,240,0.7)' : GRAY, fontSize: '0.85rem' }}>
         Your download should start automatically.{' '}
-        <a ref={linkRef} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf"
+        <a ref={linkRef} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan.pdf"
           style={{ color: GOLD, fontWeight: 600 }}>Click here</a> if it doesn&apos;t.
       </span>
       {/* Hidden auto-trigger link */}
-      <a ref={done ? linkRef : null} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan-Diagnostic.pdf" style={{ display: 'none' }} aria-hidden />
+      <a ref={done ? linkRef : null} href="/child-strategic-plan.pdf" download="Child-Strategic-Plan.pdf" style={{ display: 'none' }} aria-hidden />
     </div>
   );
 
@@ -100,12 +100,12 @@ export async function getStaticProps({ params }) {
 
 const FAQ_ITEMS = [
   {
-    q: 'What is the Child Strategic Plan Diagnostic?',
+    q: 'What is the Child Strategic Plan?',
     a: 'It is a fillable PDF planning tool included free with your purchase. It walks you through the key questions every parent should ask about their child — how they learn, what lights them up, where they struggle, what their gifts might be, and what kind of environment will bring out their best. Fill it out before your first Ezra session and use it as your roadmap throughout the 60 days.',
   },
   {
     q: 'How do I use the template and Ezra together?',
-    a: 'Start by downloading and filling out the Child Strategic Plan Diagnostic. Then open Ezra and share what you discovered — your child\'s age, learning style, strengths, struggles, and what you sense about their calling. The more specific you are, the more useful Ezra\'s coaching becomes. Think of the template as the intake form and Ezra as the coach who helps you build the strategy from it.',
+    a: 'Start by downloading and filling out the Child Strategic Plan. Then open Ezra and share what you discovered — your child\'s age, learning style, strengths, struggles, and what you sense about their calling. The more specific you are, the more useful Ezra\'s coaching becomes. Think of the template as the intake form and Ezra as the coach who helps you build the strategy from it.',
   },
   {
     q: 'What is Ezra, and what can\'t it do?',
@@ -117,7 +117,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What does the $19.99 get me?',
-    a: '60 days of access to Ezra — your AI coaching companion trained on the full book. Up to 10 coaching conversations per day. The Child Strategic Plan Diagnostic template is free and separate — download it any time without purchasing. After your 60 days you can purchase another window anytime.',
+    a: '60 days of access to Ezra — your AI coaching companion trained on the full book. Up to 10 coaching conversations per day. The Child Strategic Plan template is free and separate — download it any time without purchasing. After your 60 days you can purchase another window anytime.',
   },
   {
     q: 'Can I re-download the template after purchasing?',
@@ -152,7 +152,7 @@ export default function BookPage({ product }) {
   const [sessionVerified, setSessionVerified] = useState(false);
   const [sessionLoading, setSessionLoading]   = useState(false);
 
-  // Scroll to #purchase when arriving from an external link (e.g. diagnostic page)
+  // Scroll to #purchase when arriving from an external link (e.g. reflection page)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (window.location.hash === '#purchase') {
@@ -176,7 +176,7 @@ export default function BookPage({ product }) {
         // Coming back from Stripe — trust the redirect, payment is confirmed
         setHasPaid(true);
       } else {
-        // Coming from diagnostic or bookmark — verify they actually paid
+        // Coming from the reflection page or a bookmark — verify they actually paid
         fetch(`/api/books/check-access?email=${encodeURIComponent(em)}&productSlug=${product.slug}`)
           .then(r => r.json())
           .then(json => { if (json.allowed) setHasPaid(true); })
@@ -228,7 +228,7 @@ export default function BookPage({ product }) {
       const accessData = await accessRes.json();
       if (accessData.allowed) setHasPaid(true);
 
-      // Load child plans regardless of payment (they can still see the diagnostic link)
+      // Load child plans regardless of payment (they can still see the reflection link)
       const res = await fetch(`/api/books/diagnostic/load?email=${encodeURIComponent(em)}&productSlug=${product.slug}`);
       const json = await res.json();
       if (json.plans?.length) {
@@ -383,7 +383,7 @@ export default function BookPage({ product }) {
               {
                 icon: '🧭',
                 title: 'Make decisions from discernment, not anxiety.',
-                body: 'Stop reacting to every crisis, curriculum choice, or comparison to other families. Walk through a clear diagnostic process and come out the other side with a real plan you can act on.',
+                body: 'Stop reacting to every crisis, curriculum choice, or comparison to other families. Walk through a clear reflection process and come out the other side with a real plan you can act on.',
               },
             ].map((item, i) => (
               <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,169,81,0.15)', borderRadius: 14, padding: '1.75rem', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
@@ -416,7 +416,7 @@ export default function BookPage({ product }) {
             <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <div style={{ flex: '1 1 280px' }}>
                 <h3 style={{ color: WHITE, fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.3, marginBottom: 10 }}>
-                  📋 Child Strategic Plan Diagnostic
+                  📋 Child Strategic Plan
                 </h3>
                 <p style={{ color: 'rgba(253,248,240,0.68)', fontSize: '0.88rem', lineHeight: 1.8, margin: 0 }}>
                   A fillable form built to help you think clearly about your child. Works through their learning style, strengths, struggles, interests, and education environment. Fill it out once — use it every session.
@@ -481,9 +481,9 @@ export default function BookPage({ product }) {
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
-              { n: '01', title: 'Download the diagnostic template.', body: 'Free — no purchase required. Open the Child Strategic Plan Diagnostic and work through it for your child. It takes 20–30 minutes and gives you a clear picture of who they are, how they learn, and what they need.' },
+              { n: '01', title: 'Download the plan template.', body: 'Free — no purchase required. Open the Child Strategic Plan and work through it for your child. It takes 20–30 minutes and gives you a clear picture of who they are, how they learn, and what they need.' },
               { n: '02', title: `Get ${product.daysAccess}-day coaching access for ${price}.`, body: `One-time payment. No subscription. You get immediate access to Ezra — your AI coaching companion trained on the full book. No hidden fees.` },
-              { n: '03', title: 'Bring your child to Ezra.', body: 'Open Ezra, share what you learned from the diagnostic, and ask your real questions. Ask about your specific child — not a hypothetical one. Ezra asks good questions, gives practical frameworks, and helps you build a strategy you can act on.' },
+              { n: '03', title: 'Bring your child to Ezra.', body: 'Open Ezra, share what you learned from the plan, and ask your real questions. Ask about your specific child — not a hypothetical one. Ezra asks good questions, gives practical frameworks, and helps you build a strategy you can act on.' },
             ].map((step, i, arr) => (
               <div key={i} style={{ display: 'flex', gap: 24, alignItems: 'flex-start', padding: '2rem 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'left' }}>
                 <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '2.8rem', color: GOLD, opacity: 0.5, lineHeight: 1, flexShrink: 0, minWidth: 52 }}>{step.n}</span>
@@ -647,12 +647,12 @@ export default function BookPage({ product }) {
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 <span style={{ fontSize: 22 }}>📋</span>
                 <div>
-                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.88rem', margin: '0 0 2px' }}>Child Strategic Plan Diagnostic</p>
+                  <p style={{ color: GOLD, fontWeight: 700, fontSize: '0.88rem', margin: '0 0 2px' }}>Child Strategic Plan</p>
                   <p style={{ color: 'rgba(253,248,240,0.5)', fontSize: '0.75rem', margin: 0 }}>Fill this out so Ezra knows your child personally</p>
                 </div>
               </div>
               <a href={`/books/reflection?email=${encodeURIComponent(sessionEmail)}${activeChild ? `&childName=${encodeURIComponent(activeChild)}` : ''}`} style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '8px 18px', borderRadius: 7, fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                {activeChild ? `Fill for ${activeChild}` : 'Fill the Diagnostic'}
+                {activeChild ? `Fill for ${activeChild}` : 'Fill the Plan'}
               </a>
             </div>
 
