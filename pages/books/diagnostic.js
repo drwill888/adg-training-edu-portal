@@ -597,7 +597,7 @@ export default function DiagnosticPage() {
             Child Strategic Plan
           </h1>
           <p style={{ fontSize: '0.88rem', color: '#555', marginBottom: 4 }}>A formation-based equipping plan grounded in the nine enhancements</p>
-          <p style={{ fontSize: '0.82rem', color: '#888' }}>Companion to <em>How We Educate Children and Develop Talent</em> · Will &amp; Donna Meier</p>
+          <p style={{ fontSize: '0.82rem', color: '#888' }}>Companion to <em>How to Educate Your Child</em> · Will &amp; Donna Meier</p>
         </div>
 
         {/* ── Cloud save banner ── */}
@@ -649,7 +649,7 @@ export default function DiagnosticPage() {
         <div className="section-block" style={{ marginBottom: '2rem' }}>
           <H1>How to Use This Plan</H1>
           <Body><strong>Education is never neutral. Information is not formation. See the child before you shape the child.</strong></Body>
-          <Body>This is a strategic plan, not a worksheet. It maps the nine enhancements from <em>How We Educate Children and Develop Talent</em> onto one specific child you are forming. You can complete it alone, with a co-parent or co-teacher, or alongside Ezra Edu — the AI coaching agent trained on the book.</Body>
+          <Body>This is a strategic plan, not a worksheet. It maps the nine enhancements from <em>How to Educate Your Child</em> onto one specific child you are forming. You can complete it alone, with a co-parent or co-teacher, or alongside Ezra Edu — the AI coaching agent trained on the book.</Body>
           <Body>Three convictions shape this work:</Body>
           <ul style={{ paddingLeft: 24, marginBottom: '1rem' }}>
             {['Every child carries a designed problem they were built to solve.', 'The bar does not drop. The doorway gets wider.', 'Formation is not delegable. The adult in front of the child carries something no system can replace.'].map((t, i) => (
