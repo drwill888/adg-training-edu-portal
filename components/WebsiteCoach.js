@@ -96,7 +96,7 @@ export default function WebsiteCoach() {
       role: "assistant",
       intro: true,
       content:
-        "I am Ezra.\n\nI am named after Ezra the priest and scribe in the Bible — whose name means \"help\" or \"helper.\" In that spirit, I am here to help.\n\nEssentially, I am Will's scribe. I have been formed from his writings, teachings, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.\n\nI can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.\n\nWhat would you like to ask?",
+        "I am Ezra.\n\nI am named after Ezra the priest and scribe in the Bible — whose name means \"help\" or \"helper.\" In that spirit, I am here to help.\n\nEssentially, I am Will's scribe. I have been formed from his writings, teachings, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.\n\nI can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.\n\nIf you mention a child, please don't share their full name, birth date, school, address, or medical information — a nickname or general description is safer.\n\nWhat would you like to ask?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -522,6 +522,23 @@ export default function WebsiteCoach() {
                 ×
               </button>
             </div>
+          </div>
+
+          {/* Child-privacy notice — shown before any input, in addition to the
+              reminder above the text box, so it can't be missed pre-typing. */}
+          <div
+            style={{
+              padding: "8px 14px",
+              fontSize: 11,
+              lineHeight: 1.4,
+              color: NAVY,
+              background: "#FFF3CD",
+              borderBottom: "1px solid #f0d78c",
+              flexShrink: 0,
+            }}
+          >
+            For your child's safety: don't share their full name, birth date, school,
+            address, or medical details here — use a nickname or general description.
           </div>
 
           {/* Messages */}
