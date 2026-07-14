@@ -96,7 +96,7 @@ export default function WebsiteCoach() {
       role: "assistant",
       intro: true,
       content:
-        "I am Ezra.\n\nI am named after Ezra the priest and scribe in the Bible — whose name means \"help\" or \"helper.\" In that spirit, I am here to help.\n\nEssentially, I am Will's scribe. I have been formed from his writings, teachings, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.\n\nI can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.\n\nIf you mention a child, please don't share their full name, birth date, school, address, or medical information — a nickname or general description is safer.\n\nWhat would you like to ask?",
+        "I am Ezra.\n\nI am named after Ezra the priest and scribe in the Bible — whose name means \"help\" or \"helper.\" In that spirit, I am here to help.\n\nEssentially, I am Will's scribe. I have been formed from his writings, teachings, coaching frameworks, and Kingdom wisdom to represent his thinking with clarity and faithfulness.\n\nI can help you reflect, discern, study, ask better questions, find patterns and themes, and take faithful next steps.\n\nFor everyone's privacy, please avoid sharing full names, birth dates, addresses, or medical details — yours, a family member's, or anyone else's — a general description is safer.\n\nWhat would you like to ask?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -524,7 +524,7 @@ export default function WebsiteCoach() {
             </div>
           </div>
 
-          {/* Child-privacy notice — shown before any input, in addition to the
+          {/* Privacy notice — shown before any input, in addition to the
               reminder above the text box, so it can't be missed pre-typing. */}
           <div
             style={{
@@ -537,8 +537,9 @@ export default function WebsiteCoach() {
               flexShrink: 0,
             }}
           >
-            For your child's safety: don't share their full name, birth date, school,
-            address, or medical details here — use a nickname or general description.
+            For everyone's privacy: please don't share full names, birth dates,
+            addresses, or medical details — yours, a family member's, or anyone
+            else's — in this chat. Use general descriptions instead.
           </div>
 
           {/* Messages */}
@@ -719,9 +720,8 @@ export default function WebsiteCoach() {
               flexShrink: 0,
             }}
           >
-            Please don't share a child's full name, birth date, school, address, medical
-            information, or other details that could identify them — use a nickname or
-            general description instead.
+            Please avoid sharing full names, birth dates, addresses, or medical
+            details here — yours or anyone else's.
           </div>
 
           {/* Input */}
