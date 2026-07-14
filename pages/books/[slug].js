@@ -73,7 +73,7 @@ function DownloadGate({ dark, label = 'Download Free' }) {
         {loading ? 'Downloading…' : 'Get the Free Template'}
       </button>
       <p style={{ fontSize: '0.72rem', color: dark ? 'rgba(253,248,240,0.35)' : '#9ca3af', margin: 0, lineHeight: 1.5 }}>
-        By submitting you agree to receive emails from Awakening Destiny Global. Unsubscribe any time.
+        By submitting you agree to receive emails from Awakening Destiny Global. Unsubscribe any time. When you fill out the plan or talk with Ezra, please avoid entering your child's full name, birth date, school, address, or medical details — a nickname and general descriptions work best.
       </p>
     </form>
   );
@@ -128,8 +128,8 @@ const FAQ_ITEMS = [
     a: 'Not at all. The book and the coaching apply to any parent — whether your child is in public school, private school, or homeschool. The question is not which system you choose. It is how clearly you see your child, and how intentionally you are building around who they actually are within whatever context you\'re in.',
   },
   {
-    q: 'Is my information private?',
-    a: 'Yes. Your email is used only to verify your access. Your conversations with Ezra are stored securely and are never sold or shared. The data is used only to deliver and improve the coaching experience.',
+    q: 'Is my information private, and what should I avoid sharing about my child?',
+    a: 'Your email is used only to verify your access, and your conversations with Ezra are stored securely and never sold or shared. That said, please don\'t enter your child\'s full name, birth date, school, home address, medical or diagnostic details (ADHD, IEP/504, disabilities, trauma history), immigration status, photos, or the names of teachers or other children — in the plan template or in chat with Ezra. Use a label like "Child 1" or a nickname and general descriptions instead. Whatever you type may be processed by AI to generate coaching responses and summaries, so keep specifics general.',
   },
   {
     q: 'Important disclaimer — how to use Ezra responsibly.',
