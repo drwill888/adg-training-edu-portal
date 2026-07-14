@@ -690,6 +690,23 @@ export default function WebsiteCoach() {
             <div ref={bottomRef} />
           </div>
 
+          {/* Privacy notice */}
+          <div
+            style={{
+              padding: "6px 12px",
+              fontSize: 11,
+              lineHeight: 1.4,
+              color: GRAY,
+              background: CREAM,
+              borderTop: `1px solid #e2e6ed`,
+              flexShrink: 0,
+            }}
+          >
+            Please don't share a child's full name, birth date, school, address, medical
+            information, or other details that could identify them — use a nickname or
+            general description instead.
+          </div>
+
           {/* Input */}
           <form
             onSubmit={sendMessage}
