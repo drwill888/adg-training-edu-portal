@@ -128,8 +128,8 @@ const FAQ_ITEMS = [
     a: 'Not at all. The book and the coaching apply to any parent — whether your child is in public school, private school, or homeschool. The question is not which system you choose. It is how clearly you see your child, and how intentionally you are building around who they actually are within whatever context you\'re in.',
   },
   {
-    q: 'Is my information private, and what should I avoid sharing about my child?',
-    a: 'Your email is used only to verify your access, and your conversations with Ezra are stored securely and never sold or shared. That said, please don\'t enter your child\'s full name, birth date, school, home address, medical or diagnostic details (ADHD, IEP/504, disabilities, trauma history), immigration status, photos, or the names of teachers or other children — in the plan template or in chat with Ezra. Use a label like "Child 1" or a nickname and general descriptions instead. Whatever you type may be processed by AI to generate coaching responses and summaries, so keep specifics general.',
+    q: 'Is my information private, and what should I avoid sharing about my child or student?',
+    a: 'Your email is used only to verify your access, and your conversations with Ezra are stored securely and never sold or shared. That said, please don\'t enter your child\'s or student\'s full name, birth date, school, home address, medical or diagnostic details (ADHD, IEP/504, disabilities, trauma history), immigration status, photos, or the names of teachers or other children — in the plan template or in chat with Ezra. If you\'re an educator, also avoid school records, counseling information, and disciplinary records. Use a label like "Child 1" or a nickname and general descriptions instead. Whatever you type may be processed by AI to generate coaching responses and summaries, so keep specifics general. Ezra Edu is intended for use by an authorized adult (parent, legal guardian, teacher, or other caregiver) describing one child at a time — not for direct use by minors.',
   },
   {
     q: 'Important disclaimer — how to use Ezra responsibly.',
@@ -287,6 +287,9 @@ export default function BookPage({ product }) {
           <DownloadGate dark label="Free Planning Template" />
         </div>
         <p style={{ fontSize: '0.78rem', color: 'rgba(253,248,240,0.35)' }}>One-time payment. Secure checkout via Stripe. Access begins immediately.</p>
+        <p style={{ fontSize: '0.72rem', color: 'rgba(253,248,240,0.3)', maxWidth: 520, margin: '10px auto 0', lineHeight: 1.6 }}>
+          Ezra Edu is an adult-only coaching tool for parents, legal guardians, educators, youth pastors, mentors, and other authorized adults who want to support a child&apos;s learning and formation. Not intended for direct use by minors.
+        </p>
       </section>
 
       {/* ── The Problem ──────────────────────────────────────────────────── */}
