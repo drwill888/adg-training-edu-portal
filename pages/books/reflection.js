@@ -356,6 +356,9 @@ function ReviewTable({ values, onChange }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ReflectionPage() {
   const [values, setValues]             = useState({});
+  const [consented, setConsented]       = useState(false);
+  const [audienceType, setAudienceType] = useState('');
+  const [consentChecked, setConsentChecked] = useState(false);
   const [saveEmail, setSaveEmail]       = useState('');
   const [cloudStatus, setCloudStatus]   = useState(''); // 'saving' | 'saved' | 'loaded' | 'error'
   const [multiChildBlocked, setMCB]    = useState(false); // paid gate for 2nd+ child
@@ -519,6 +522,87 @@ export default function ReflectionPage() {
     '15–18 (high school)',
     'Prefer not to specify',
   ].map(label => ({ value: label, label }));
+
+  const AUDIENCE_OPTIONS = [
+    'My child',
+    'A student I am authorized to support',
+    'A child or young person I mentor',
+    'Myself as a parent, educator, or mentor',
+  ];
+
+  if (!consented) {
+    const canContinue = audienceType && consentChecked;
+    return (
+      <>
+        <Head>
+          <title>Child Strategic Plan — Ezra Edu</title>
+          <meta name="robots" content="noindex" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+        </Head>
+        <div style={{ background: NAVY, padding: '12px 24px' }}>
+          <span style={{ color: GOLD, fontWeight: 700, fontSize: '0.9rem', fontFamily: 'Outfit, sans-serif', letterSpacing: '0.08em' }}>EZRA EDU</span>
+        </div>
+        <div style={{ maxWidth: 560, margin: '0 auto', padding: '3rem 1.5rem 4rem', fontFamily: "'Outfit', system-ui, sans-serif" }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', fontWeight: 600, color: NAVY, marginBottom: 18 }}>
+            Before you begin
+          </h1>
+          <p style={{ fontSize: '0.95rem', color: BODY, lineHeight: 1.7, marginBottom: 24 }}>
+            Ezra Edu is an adult-only coaching tool for parents, legal guardians, educators, youth pastors, mentors, and other authorized adults who want to support a child’s learning and formation. Ezra Edu is not intended for direct use by minors.
+          </p>
+
+          <p style={{ fontSize: '0.9rem', fontWeight: 600, color: NAVY, marginBottom: 10 }}>Who are you seeking to support?</p>
+          <div style={{ marginBottom: 24 }}>
+            {AUDIENCE_OPTIONS.map(opt => (
+              <label key={opt} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10, fontSize: '0.9rem', color: BODY, cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="audienceType"
+                  value={opt}
+                  checked={audienceType === opt}
+                  onChange={() => setAudienceType(opt)}
+                  style={{ marginTop: 3, accentColor: NAVY, flexShrink: 0, width: 15, height: 15 }}
+                />
+                {opt}
+              </label>
+            ))}
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 28, fontSize: '0.85rem', color: BODY, lineHeight: 1.6, cursor: 'pointer', background: '#FFF3CD', border: '1px solid #f0d78c', borderRadius: 8, padding: '0.9rem 1.1rem' }}>
+            <input
+              type="checkbox"
+              checked={consentChecked}
+              onChange={e => setConsentChecked(e.target.checked)}
+              style={{ marginTop: 3, accentColor: NAVY, flexShrink: 0, width: 15, height: 15 }}
+            />
+            <span>
+              I confirm that I am an adult (parent, legal guardian, teacher, or other authorized caregiver) legally authorized to support the child or student I am describing. I will not enter their full name, school records, medical or diagnostic information, disciplinary records, photographs, or other confidential or identifying details.
+            </span>
+          </label>
+
+          <button
+            onClick={() => {
+              if (!canContinue) return;
+              setValues(prev => ({ ...prev, audience_type: audienceType, privacy_consent_confirmed: true }));
+              setConsented(true);
+            }}
+            disabled={!canContinue}
+            style={{
+              background: canContinue ? NAVY : '#ccc',
+              color: canContinue ? GOLD : '#888',
+              border: 'none', borderRadius: 8, padding: '13px 28px',
+              fontWeight: 700, fontSize: '0.92rem',
+              cursor: canContinue ? 'pointer' : 'not-allowed',
+              fontFamily: 'inherit',
+            }}
+          >
+            Continue
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
